@@ -54,7 +54,8 @@ export function AppShell({
                 <span className="text-primary font-black">{userProfile.full_name?.charAt(0) ?? '?'}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">{userProfile.full_name}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Signed in as</p>
+                <p className="text-sm font-bold truncate">{userProfile.email ?? userProfile.full_name}</p>
                 <p className="text-xs text-muted-foreground capitalize">{activeMode}</p>
               </div>
             </div>
@@ -87,8 +88,10 @@ export function AppShell({
 
           <div className="hidden md:block">
             <p className="text-sm text-muted-foreground">
-              Welcome back,{' '}
-              <span className="text-foreground font-black">{userProfile?.full_name ?? 'Guest'}</span>
+              Signed in as{' '}
+              <span className="text-foreground font-black">
+                {userProfile?.email ?? userProfile?.full_name ?? 'Guest'}
+              </span>
             </p>
           </div>
 

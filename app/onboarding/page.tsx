@@ -12,10 +12,13 @@ import { useToast } from '@/components/ui/toast'
 import { Loader2, Building2, User, Phone } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserRole } from '@/types'
+import { getSignedInLabel } from '@/lib/auth-display'
+import { SignedInAs } from '@/components/signed-in-as'
 
 export default function OnboardingPage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
+  const [signedInAs, setSignedInAs] = useState<string | null>(null)
   const [roles, setRoles] = useState<UserRole[]>(['tenant'])
   const [activeMode, setActiveMode] = useState<UserRole>('tenant')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -35,7 +38,10 @@ export default function OnboardingPage() {
       }
 
       const intended = user.user_metadata?.intended_role as UserRole | undefined
-      const name = user.user_metadata?.full_name as string | undefined
+      const name =
+        (user.user_metadata?.full_name as string | undefined) ??
+        (user.user_metadata?.name as string | undefined)
+      setSignedInAs(getSignedInLabel(user))
       if (name) setFullName(name)
       if (intended === 'landlord' || intended === 'tenant') {
         setRoles([intended])
@@ -138,6 +144,11 @@ export default function OnboardingPage() {
           <div className="w-12 h-12 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
             <User size={24} />
           </div>
+          {signedInAs && (
+            <div className="flex justify-center">
+              <SignedInAs label={signedInAs} />
+            </div>
+          )}
           <h2 className="text-3xl font-black tracking-tight">Complete your profile</h2>
           <p className="text-sm text-muted-foreground font-medium">
             A few details to personalize your RentPay experience in Uganda.
