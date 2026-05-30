@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 
 const features = [
   { icon: Building2, title: 'Property portfolio', desc: 'Manage buildings, units, and NWSC/UEDCL accounts across Uganda.' },
-  { icon: CreditCard, title: 'Pesapal payments', desc: 'MTN Mobile Money and Airtel Money rent collection with instant receipts.' },
+  { icon: CreditCard, title: 'Yo! Payments', desc: 'MTN & Airtel Mobile Money plus Visa/Mastercard — powered by Yo! Payments Uganda.' },
   { icon: FileText, title: 'Documents & leases', desc: 'Digital agreements, statements, and signed receipts in one place.' },
   { icon: Hammer, title: 'Maintenance', desc: 'Tenants report issues with photos; landlords track resolution.' },
   { icon: MessageSquare, title: 'Realtime chat', desc: 'Stay connected with tenants and landlords without WhatsApp chaos.' },
@@ -24,7 +24,7 @@ const features = [
 ]
 
 const faqs = [
-  { q: 'Which payment methods are supported?', a: 'RentPay integrates with Pesapal for MTN Mobile Money, Airtel Money, and card payments in UGX.' },
+  { q: 'Which payment methods are supported?', a: 'RentPay integrates with Yo! Payments for MTN Mobile Money, Airtel Money, Visa, and Mastercard in UGX.' },
   { q: 'Is RentPay only for Kampala?', a: 'No — landlords across Uganda can use RentPay. We are built for Uganda with expansion across East Africa in mind.' },
   { q: 'Can I be both a landlord and tenant?', a: 'Yes. Switch between landlord and tenant modes from your dashboard.' },
   { q: 'How do tenants join a property?', a: 'Landlords generate an invite code. Tenants enter the code to link their unit securely.' },
@@ -78,7 +78,7 @@ export function LandingPage() {
               </Link>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 pt-8 text-sm font-bold text-muted-foreground">
-              <span className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> Pesapal verified</span>
+              <span className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> Yo Payments Uganda verified</span>
               <span className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> UGX native</span>
               <span className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> Free to start</span>
             </div>
@@ -116,7 +116,7 @@ export function LandingPage() {
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight">Payments tenants trust</h2>
                 <p className="text-muted-foreground font-medium leading-relaxed">
-                  Tenants pay rent through Pesapal with MTN Mobile Money or Airtel Money. Landlords receive verified callbacks, automatic invoice updates, and wallet credits — no manual reconciliation.
+                  Tenants pay rent through Yo! Payments with Mobile Money or card. Landlords receive verified IPN callbacks, automatic invoice updates, and wallet credits — no manual reconciliation.
                 </p>
                 <ul className="space-y-3">
                   {['Instant payment confirmation', 'Digital receipts & signatures', 'Overdue invoice tracking', 'Transparent wallet history'].map((item) => (
@@ -163,7 +163,7 @@ export function LandingPage() {
         <section className="py-20 md:py-28">
           <div className="container max-w-3xl mx-auto px-4 text-center space-y-6">
             <h2 className="text-3xl md:text-4xl font-black">Simple, transparent pricing</h2>
-            <p className="text-muted-foreground font-medium">Start free during launch. Transaction fees apply via Pesapal payment processing.</p>
+            <p className="text-muted-foreground font-medium">Start free during launch. Transaction fees apply via Yo! Payments processing.</p>
             <div className="bg-background border-4 border-dashed border-muted rounded-[32px] p-12">
               <p className="text-5xl font-black text-primary mb-2">Free</p>
               <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">During early access</p>

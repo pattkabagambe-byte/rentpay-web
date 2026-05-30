@@ -1,6 +1,7 @@
 import { createClient } from '@/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { PayInvoiceClient } from '@/features/payments/components/pay-invoice-client'
+import { isYoCardCheckoutConfigured } from '@/lib/yo-payments'
 
 export default async function PayInvoicePage({ params }: { params: { invoiceId: string } }) {
   const supabase = createClient()
@@ -36,6 +37,7 @@ export default async function PayInvoicePage({ params }: { params: { invoiceId: 
         properties: property ? { name: property.name } : null,
         units: unit ? { label: unit.label } : null,
       }}
+      cardCheckoutEnabled={isYoCardCheckoutConfigured()}
     />
   )
 }

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   description:
     'Collect rent via Mobile Money, manage properties, invoices, maintenance, and documents. Built for landlords and tenants in Uganda.',
-  keywords: ['rent', 'Uganda', 'landlord', 'tenant', 'Pesapal', 'Mobile Money', 'property management', 'Kampala'],
+  keywords: ['rent', 'Uganda', 'landlord', 'tenant', 'Yo Payments', 'Mobile Money', 'property management', 'Kampala'],
   authors: [{ name: 'Potentia-Motus Ventures' }],
   openGraph: {
     type: 'website',

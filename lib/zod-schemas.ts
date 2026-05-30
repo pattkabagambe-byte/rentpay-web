@@ -70,6 +70,22 @@ export const inviteCodeSchema = z.object({
   code: z.string().min(4, 'Enter a valid invite code'),
 })
 
+export const invoicePaymentSchema = z.object({
+  invoiceId: z.string().uuid('Invalid invoice'),
+  method: z.enum(['mobile_money', 'card']),
+  phone: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.method === 'mobile_money') {
+    if (!data.phone || !isValidPhoneUG(data.phone)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Enter a valid Uganda mobile number (MTN or Airtel)',
+        path: ['phone'],
+      })
+    }
+  }
+})
+
 export const tenantOnboardingSchema = z.object({
   nin: z.string().min(14, 'Enter a valid National ID number (NIN)').max(20, 'NIN looks too long'),
   emergency_contact: z.string().min(5, 'Enter emergency contact name and phone'),

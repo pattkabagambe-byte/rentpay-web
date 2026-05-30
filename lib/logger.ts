@@ -30,5 +30,6 @@ export function logPaymentEvent(
   data: Record<string, unknown>,
   level: LogLevel = 'info'
 ) {
-  logEvent({ service: 'pesapal-ipn', event, level, ...data })
+  const service = typeof data.provider === 'string' ? `${data.provider}-payments` : 'payments'
+  logEvent({ service, event, level, ...data })
 }

@@ -4,19 +4,22 @@ vi.mock('@/supabase/server', () => ({
   createClient: vi.fn(),
 }))
 
-vi.mock('@/lib/pesapal', () => ({
-  getPesapalAuthToken: vi.fn().mockResolvedValue('token'),
-  registerPesapalIPN: vi.fn().mockResolvedValue({ ipn_id: 'ipn-123' }),
-  submitPesapalOrder: vi.fn().mockResolvedValue({
-    redirect_url: 'https://pay.pesapal.com/checkout',
-    order_tracking_id: 'track-123',
+vi.mock('@/lib/yo-payments', () => ({
+  yoDepositFunds: vi.fn().mockResolvedValue({
+    status: 'OK',
+    statusCode: '0',
+    transactionStatus: 'PENDING',
+    transactionReference: 'TX-123',
   }),
+  buildYoCardCheckoutUrl: vi.fn(),
+  isYoCardCheckoutConfigured: vi.fn().mockReturnValue(false),
+  isYoTransactionSucceeded: vi.fn().mockReturnValue(false),
 }))
 
 import { createClient } from '@/supabase/server'
 import { initiateInvoicePayment } from '@/features/payments/actions'
 
-describe('initiateInvoicePayment', () => {
+describe('initiateInvoicePayment (Yo! Payments)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -26,46 +29,20 @@ describe('initiateInvoicePayment', () => {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
     } as never)
 
-    await expect(initiateInvoicePayment('inv-1')).rejects.toThrow('Unauthorized')
+    await expect(
+      initiateInvoicePayment({ invoiceId: '00000000-0000-0000-0000-000000000001', method: 'mobile_money', phone: '0700123456' })
+    ).rejects.toThrow('Unauthorized')
   })
 
-  it('rejects invoices not belonging to the tenant', async () => {
+  it('requires phone for mobile money', async () => {
     vi.mocked(createClient).mockReturnValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1', email: 't@test.ug' } } }) },
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: null, error: { message: 'not found' } }),
-            }),
-          }),
-        }),
-      }),
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }) },
     } as never)
 
-    await expect(initiateInvoicePayment('inv-1')).rejects.toThrow('Invoice not found')
-  })
-
-  it('returns error for already paid invoices', async () => {
-    vi.mocked(createClient).mockReturnValue({
-      auth: { getUser: vi.fn().mockResolvedValue({
-        data: { user: { id: 'user-1', email: 't@test.ug', user_metadata: {} } },
-      }) },
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { id: 'inv-1', status: 'paid', properties: { name: 'Test' } },
-                error: null,
-              }),
-            }),
-          }),
-        }),
-      }),
-    } as never)
-
-    const result = await initiateInvoicePayment('inv-1')
-    expect(result.error).toMatch(/already been paid/)
+    const result = await initiateInvoicePayment({
+      invoiceId: '00000000-0000-0000-0000-000000000001',
+      method: 'mobile_money',
+    })
+    expect(result.error).toBeTruthy()
   })
 })

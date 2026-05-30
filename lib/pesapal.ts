@@ -1,3 +1,4 @@
+/** @deprecated Use lib/yo-payments.ts — Pesapal is no longer used. */
 const PESAPAL_BASE_URL = process.env.NODE_ENV === 'production'
   ? 'https://pay.pesapal.com/v3'
   : 'https://cybqa.pesapal.com/v3';

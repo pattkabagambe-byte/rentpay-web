@@ -88,3 +88,10 @@ export const normalizePhoneUG = (phone: string): string | null => {
 }
 
 export const isValidPhoneUG = (phone: string): boolean => normalizePhoneUG(phone) !== null
+
+/** Yo! Payments MSISDN format: 256XXXXXXXXX (no + prefix) */
+export const normalizePhoneYoAccount = (phone: string): string | null => {
+  const e164 = normalizePhoneUG(phone)
+  if (!e164) return null
+  return e164.replace('+', '')
+}

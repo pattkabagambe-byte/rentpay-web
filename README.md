@@ -2,14 +2,14 @@
 
 Rent management and payments for Uganda — built for landlords and tenants in Kampala and beyond.
 
-**Stack:** Next.js 14 · Supabase (Auth, Postgres, Storage, Realtime) · Pesapal · Vercel
+**Stack:** Next.js 14 · Supabase (Auth, Postgres, Storage, Realtime) · Yo! Payments · Vercel
 
 ---
 
 ## Features
 
 - **Landlord portal** — properties, units, invites, invoices, maintenance, URA tax calculator
-- **Tenant portal** — link unit, pay rent (MTN/Airtel via Pesapal), utilities, chat, documents
+- **Tenant portal** — link unit, pay rent (MTN/Airtel/card via Yo! Payments), utilities, chat, documents
 - **Realtime** — messages and notifications
 - **Uganda-first** — UGX, NWSC, UEDCL/Yaka, Uganda-focused copy
 
@@ -21,7 +21,7 @@ Rent management and payments for Uganda — built for landlords and tenants in K
 
 - Node.js 18+
 - [Supabase](https://supabase.com) project
-- [Pesapal](https://pesapal.com) sandbox credentials (for payments)
+- [Yo! Payments](https://www.yo.co.ug) business account (API username/password)
 
 ### 2. Clone and install
 
@@ -146,11 +146,12 @@ Add in **Vercel → Settings → Environment Variables**:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview | Public anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview | **Secret** — payment webhooks |
 | `NEXT_PUBLIC_APP_URL` | Production | `https://your-domain.vercel.app` |
-| `PESAPAL_CONSUMER_KEY` | Production | Production keys for live |
-| `PESAPAL_CONSUMER_SECRET` | Production | Production secret |
-| `PESAPAL_IPN_ID` | Production | See Pesapal setup below |
+| `YO_API_USERNAME` | Production, Preview | Yo! Payments API username |
+| `YO_API_PASSWORD` | Production, Preview | Yo! Payments API password |
+| `YO_PUBLIC_KEY_PEM` | Production | Yo IPN signature verification (public key) |
+| `YO_CARD_CHECKOUT_URL` | Production | Optional — hosted Visa/Mastercard checkout URL template |
 
-Use **Preview** env vars with sandbox Pesapal keys for PR previews.
+Use **Preview** env vars with Yo! sandbox credentials for PR previews.
 
 ### 4. Deploy
 
@@ -161,12 +162,20 @@ npm run build
 npm test
 ```
 
-### 5. Pesapal IPN setup
+### 5. Yo! Payments setup
 
-1. Deploy to Vercel first so the IPN URL is live
-2. IPN URL: `https://your-domain.com/api/payments/pesapal-ipn`
-3. Register via Pesapal merchant dashboard **or** trigger one payment (logs `PESAPAL_IPN_ID` if unset)
-4. Copy `ipn_id` → set `PESAPAL_IPN_ID` in Vercel → redeploy
+1. Deploy to Vercel first so IPN URLs are live
+2. **Success IPN:** `https://your-domain.com/api/payments/yo/ipn`
+3. **Failure IPN:** `https://your-domain.com/api/payments/yo/ipn/failure`
+4. Configure these in your Yo! Payments business account (Instant / Failure notification URLs)
+5. Set `YO_PUBLIC_KEY_PEM` from Yo Uganda sandbox/production certificate
+6. For **Visa/Mastercard**, obtain hosted checkout URL from Yo support and set `YO_CARD_CHECKOUT_URL` with placeholders `{amount}`, `{currency}`, `{external_ref}`, `{return_url}`
+
+Apply migration `20240601000000_yo_payments.sql`:
+
+```bash
+supabase db push
+```
 
 ### 6. Update Supabase auth URLs
 
@@ -180,7 +189,7 @@ Set production callback URL in Supabase Auth settings to match `NEXT_PUBLIC_APP_
 |------|----------------|
 | **RLS** | All tables; tenants/landlords scoped by tenancy |
 | **Invites** | Lookup via `lookup_invite_by_code` RPC (no open SELECT) |
-| **Payments IPN** | Service role + Pesapal re-verification + idempotent RPC |
+| **Payments IPN** | Service role + Yo IPN signature verify + idempotent RPC |
 | **Rate limiting** | IPN (30/min), sign-out (20/min) — use Upstash for strict prod limits |
 | **Storage** | Maintenance photos scoped to tenancy; private document buckets |
 | **Logging** | Structured JSON logs on payment callbacks (Vercel function logs) |
@@ -208,10 +217,8 @@ See `docs/QA_CHECKLIST.md` for pre-launch verification.
 app/                  Next.js App Router pages
   (auth)/             Login, register, password reset
   (dashboard)/        Landlord & tenant portals
-  api/                Pesapal IPN, sign-out
-components/           Shared UI + layout
-features/             Domain modules (actions + components)
-lib/                  Utilities, Pesapal, admin client
+  api/                Yo! Payments IPN, sign-out
+lib/                  Utilities, Yo! Payments client, admin client
 supabase/             Migrations, middleware, clients
 scripts/              Demo seed script
 __tests__/            Vitest tests
