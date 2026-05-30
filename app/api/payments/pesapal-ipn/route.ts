@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 
-/** @deprecated RentPay uses Yo! Payments. Legacy Pesapal callbacks are no longer processed. */
+/** Legacy route — RentPay uses Yo! Payments Uganda. Old payment callbacks are not processed. */
 export async function GET() {
   return NextResponse.json(
-    { error: 'Pesapal integration removed. Configure Yo! Payments IPN at /api/payments/yo/ipn' },
+    { error: 'Use Yo! Payments Uganda IPN at /api/payments/yo/ipn' },
     { status: 410 }
   )
 }

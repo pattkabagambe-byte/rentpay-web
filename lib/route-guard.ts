@@ -35,8 +35,14 @@ export function evaluateRouteGuard(input: RouteGuardInput): RouteGuardResult {
     return { redirectTo: '/login' }
   }
 
-  if (hasSession && pathname === '/dashboard' && !activeMode) {
-    return { redirectTo: onboardingCompleted === false ? '/onboarding' : '/tenant' }
+  if (hasSession && pathname === '/dashboard') {
+    if (onboardingCompleted === false) {
+      return { redirectTo: '/onboarding' }
+    }
+    if (activeMode === 'landlord' || activeMode === 'tenant') {
+      return { redirectTo: `/${activeMode}` }
+    }
+    return { redirectTo: '/onboarding' }
   }
 
   if (hasSession && AUTH_PAGES.includes(pathname as (typeof AUTH_PAGES)[number])) {
@@ -49,10 +55,6 @@ export function evaluateRouteGuard(input: RouteGuardInput): RouteGuardResult {
 
   if (hasSession && onboardingCompleted === true && pathname === '/onboarding') {
     return { redirectTo: '/dashboard' }
-  }
-
-  if (hasSession && pathname === '/dashboard' && activeMode) {
-    return { redirectTo: `/${activeMode}` }
   }
 
   return {}

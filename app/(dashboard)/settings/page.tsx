@@ -54,7 +54,7 @@ export default async function SettingsPage() {
                         </div>
                         <ChevronRight size={18} className="text-muted-foreground group-hover:text-primary transition-all" />
                     </Link>
-                    <a href="https://potentiamotus.com/privacy" target="_blank" rel="noopener noreferrer" className="p-6 flex items-center justify-between hover:bg-muted/5 transition-colors group">
+                    <Link href="/privacy" className="p-6 flex items-center justify-between hover:bg-muted/5 transition-colors group">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
                                 <ShieldCheck size={20} />
@@ -64,8 +64,8 @@ export default async function SettingsPage() {
                                 <p className="text-xs text-muted-foreground">Review how we handle your data.</p>
                             </div>
                         </div>
-                        <ExternalLink size={18} className="text-muted-foreground group-hover:text-accent transition-all" />
-                    </a>
+                        <ChevronRight size={18} className="text-muted-foreground group-hover:text-primary transition-all" />
+                    </Link>
                 </div>
             </div>
         </section>

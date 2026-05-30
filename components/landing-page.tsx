@@ -215,7 +215,8 @@ export function LandingPage() {
           <nav className="flex gap-6 text-xs font-bold text-muted-foreground">
             <Link href="/login" className="hover:text-primary transition-colors">Log in</Link>
             <Link href="/register" className="hover:text-primary transition-colors">Register</Link>
-            <span className="text-muted-foreground/50">Terms · Privacy (coming soon)</span>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
           </nav>
         </div>
       </footer>

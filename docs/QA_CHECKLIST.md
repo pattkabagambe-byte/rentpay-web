@@ -7,22 +7,25 @@ Use this checklist before and after each production deploy.
 - [ ] All Vercel env vars set (see `.env.example`)
 - [ ] `NEXT_PUBLIC_APP_URL` matches production domain (https)
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` set (server-only, never `NEXT_PUBLIC_`)
-- [ ] `PESAPAL_IPN_ID` registered and set
-- [ ] Pesapal production keys configured (not sandbox)
+- [ ] Yo! Payments Uganda API credentials configured (`YO_API_USERNAME`, `YO_API_PASSWORD`)
+- [ ] `YO_PUBLIC_KEY_PEM` set for production IPN signature verification
+- [ ] Yo! sandbox credentials used for Preview deploys; production credentials for Production
 
 ## Supabase
 
-- [ ] All migrations applied (`20240520000000` through `20240530000000`)
+- [ ] All migrations applied (`20240520000000` through `20240601000000_yo_payments`)
 - [ ] RLS enabled on all public tables
 - [ ] Realtime enabled for `messages` and `notifications`
 - [ ] Storage buckets exist: `properties`, `identities`, `user-documents`, `tenancy-documents`, `maintenance-photos`
 - [ ] Auth redirect URLs include `https://your-domain.com/auth/callback`
 - [ ] Email auth provider configured
+- [ ] Google OAuth client ID/secret match Google Cloud Console
 
 ## Auth & routing
 
 - [ ] Unauthenticated users redirected from `/landlord`, `/tenant`, `/settings`, `/wallet`, `/messages`
 - [ ] Login / register work (email + Google if enabled)
+- [ ] Google sign-in lands on `/onboarding` (new) or portal (returning)
 - [ ] Password reset lands on `/reset-password` after email link
 - [ ] Onboarding gate works for new users
 - [ ] Mode switcher (landlord ↔ tenant) works
@@ -40,7 +43,7 @@ Use this checklist before and after each production deploy.
 
 - [ ] Link property via invite code
 - [ ] View invoices and utility bills
-- [ ] Initiate Pesapal payment (sandbox/prod)
+- [ ] Initiate Yo! Payments payment (Mobile Money sandbox/prod)
 - [ ] IPN callback marks invoice paid
 - [ ] Wallet shows credit/debit transactions
 - [ ] Report maintenance issue with photo
@@ -49,10 +52,10 @@ Use this checklist before and after each production deploy.
 ## Payments security
 
 - [ ] IPN verifies order exists in DB before processing
-- [ ] IPN re-verifies status with Pesapal API
+- [ ] IPN verifies Yo! Payments Uganda signature (`YO_PUBLIC_KEY_PEM`)
 - [ ] Duplicate IPN calls are idempotent
 - [ ] IPN logs appear in Vercel function logs (JSON)
-- [ ] Merchant reference mismatch rejected
+- [ ] External reference mismatch rejected
 
 ## Performance & mobile
 
@@ -70,14 +73,14 @@ npm test
 - [ ] Route guard tests pass
 - [ ] Rate limit tests pass
 - [ ] Payment action tests pass
-- [ ] Pesapal IPN route tests pass
+- [ ] Yo! Payments IPN route tests pass
 
 ## Post-deploy smoke test
 
 1. Sign in as demo landlord
 2. Sign in as demo tenant (separate browser/incognito)
 3. Tenant links unit with invite code
-4. Tenant pays invoice via Pesapal
+4. Tenant pays invoice via Yo! Payments Uganda
 5. Confirm landlord dashboard shows payment received
 6. Send a chat message both directions
 
@@ -85,4 +88,4 @@ npm test
 
 - [ ] Vercel deployment logs accessible
 - [ ] Supabase dashboard → Logs for auth errors
-- [ ] Pesapal merchant dashboard for transaction status
+- [ ] Yo! Payments business dashboard for transaction status

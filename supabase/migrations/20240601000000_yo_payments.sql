@@ -1,4 +1,4 @@
--- Yo! Payments completion RPC (replaces Pesapal for new payments)
+-- Yo! Payments Uganda completion RPC
 create or replace function public.complete_yo_payment(
   p_external_reference text,
   p_transaction_reference text default null,

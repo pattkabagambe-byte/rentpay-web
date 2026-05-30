@@ -39,8 +39,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-PESAPAL_CONSUMER_KEY=your-sandbox-key
-PESAPAL_CONSUMER_SECRET=your-sandbox-secret
+YO_API_USERNAME=your-yo-api-username
+YO_API_PASSWORD=your-yo-api-password
+# YO_PUBLIC_KEY_PEM="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
 ```
 
 ### 4. Run Supabase migrations
@@ -88,6 +89,7 @@ Migrations live in `supabase/migrations/`. Apply them in order:
 | `20240528000000_settings_updates.sql` | Account deletion flags |
 | `20240529000000_notifications_schema.sql` | Notifications + realtime |
 | `20240530000000_production_hardening.sql` | Security hardening |
+| `20240601000000_yo_payments.sql` | Yo! Payments Uganda completion RPC |
 
 ### Option A — Supabase CLI (recommended)
 
@@ -238,7 +240,7 @@ Tests cover:
 - Route protection logic (`lib/route-guard.ts`)
 - Rate limiting
 - Payment initiation server action
-- Pesapal IPN webhook security
+- Yo! Payments Uganda IPN webhook security
 
 ---
 
@@ -248,7 +250,7 @@ Tests cover:
 → Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel.
 
 **Payment completes but invoice stays "due"**
-→ Check Vercel logs for `pesapal-ipn` events. Ensure `SUPABASE_SERVICE_ROLE_KEY` is set and migration `20240530000000` is applied.
+→ Check Vercel logs for `yo-ipn` events. Ensure `SUPABASE_SERVICE_ROLE_KEY`, `YO_PUBLIC_KEY_PEM`, and migration `20240601000000_yo_payments.sql` are applied.
 
 **Invite code not working**
 → Run production hardening migration. Codes are resolved via RPC, not open table SELECT.

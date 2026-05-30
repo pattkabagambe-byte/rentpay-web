@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { LEGAL_PATHS } from '@/lib/legal-urls'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/supabase/client'
 import { registerSchema } from '@/lib/zod-schemas'
@@ -185,7 +186,15 @@ export default function RegisterPage() {
         </Button>
 
         <p className="text-xs text-muted-foreground text-center font-medium">
-          By signing up you agree to our terms of service and privacy policy.
+          By signing up you agree to our{' '}
+          <Link href={LEGAL_PATHS.terms} className="text-primary font-bold hover:underline">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href={LEGAL_PATHS.privacy} className="text-primary font-bold hover:underline">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </form>
     </>
