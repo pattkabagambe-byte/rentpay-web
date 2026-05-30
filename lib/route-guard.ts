@@ -31,6 +31,14 @@ export function evaluateRouteGuard(input: RouteGuardInput): RouteGuardResult {
     return { redirectTo: '/login' }
   }
 
+  if (!hasSession && pathname === '/dashboard') {
+    return { redirectTo: '/login' }
+  }
+
+  if (hasSession && pathname === '/dashboard' && !activeMode) {
+    return { redirectTo: onboardingCompleted === false ? '/onboarding' : '/tenant' }
+  }
+
   if (hasSession && AUTH_PAGES.includes(pathname as (typeof AUTH_PAGES)[number])) {
     return { redirectTo: '/dashboard' }
   }

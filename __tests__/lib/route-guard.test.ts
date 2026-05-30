@@ -38,6 +38,14 @@ describe('evaluateRouteGuard', () => {
     expect(result.redirectTo).toBe('/dashboard')
   })
 
+  it('redirects unauthenticated users from /dashboard to login', () => {
+    const result = evaluateRouteGuard({
+      pathname: '/dashboard',
+      hasSession: false,
+    })
+    expect(result.redirectTo).toBe('/login')
+  })
+
   it('redirects /dashboard to active mode portal', () => {
     const result = evaluateRouteGuard({
       pathname: '/dashboard',
