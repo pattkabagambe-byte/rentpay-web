@@ -357,6 +357,7 @@ export function LandingPage() {
               { href: '#how-it-works', label: 'How it works' },
               { href: '#pricing', label: 'Pricing' },
               { href: '#faq', label: 'FAQ' },
+              { href: '/listings', label: 'Browse listings' },
             ].map(({ href, label }) => (
               <Link key={href} href={href} className="text-sm font-bold text-muted-foreground hover:text-emerald-600 transition-colors">
                 {label}
@@ -422,6 +423,14 @@ export function LandingPage() {
                     </Button>
                   </Link>
                 </div>
+
+                {/* Browse listings link */}
+                <p className="text-sm text-muted-foreground font-medium">
+                  Looking for a place?{' '}
+                  <Link href="/listings" className="text-emerald-600 dark:text-emerald-400 font-black hover:underline inline-flex items-center gap-1">
+                    Browse available properties <ArrowRight size={13} />
+                  </Link>
+                </p>
 
                 {/* Trust row */}
                 <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">

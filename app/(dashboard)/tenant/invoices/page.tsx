@@ -4,23 +4,41 @@ import {
   Droplets,
   Zap,
   Trash2,
-  TrendingDown,
   AlertCircle,
   CheckCircle2,
   Clock,
+  SplitSquareHorizontal,
+  TrendingDown,
 } from 'lucide-react'
 import Link from 'next/link'
 import { ensureCurrentInvoice, refreshAllInvoiceStatuses } from '@/features/invoices/actions'
 import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { StatusBadge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { InvoiceCard } from '@/components/ui/invoice-card'
 import { MoneyDisplay } from '@/components/ui/money-display'
 import { copy } from '@/lib/copy'
+import { formatCurrency } from '@/lib/format'
 import { Property, Unit } from '@/types'
+import { cn } from '@/lib/utils'
 
-export default async function TenantInvoicesPage() {
+// ─── Filter tabs ──────────────────────────────────────────────────────────────
+
+type FilterKey = 'all' | 'due' | 'overdue' | 'partial' | 'paid'
+
+const FILTER_TABS: { key: FilterKey; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'due', label: 'Due' },
+  { key: 'overdue', label: 'Overdue' },
+  { key: 'partial', label: 'Partial' },
+  { key: 'paid', label: 'Paid' },
+]
+
+export default async function TenantInvoicesPage({
+  searchParams,
+}: {
+  searchParams?: { filter?: string }
+}) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -49,15 +67,73 @@ export default async function TenantInvoicesPage() {
     .eq('tenancy_id', tenancy?.id)
     .order('created_at', { ascending: false })
 
-  // Compute outstanding totals
-  const overdueInvoices = invoices?.filter(i => i.status === 'overdue') ?? []
-  const dueInvoices = invoices?.filter(i => i.status === 'due') ?? []
-  const paidInvoices = invoices?.filter(i => i.status === 'paid') ?? []
-  const outstandingAmount = [...overdueInvoices, ...dueInvoices].reduce(
-    (acc, i) => acc + Number(i.amount_due), 0
+  // ── Fetch completed payments per invoice ────────────────────────────────────
+  const invoiceIds = invoices?.map(i => i.id) ?? []
+  let paymentsByInvoice: Record<string, number> = {}
+
+  if (invoiceIds.length > 0) {
+    const { data: completedPayments } = await supabase
+      .from('payments')
+      .select('invoice_id, amount')
+      .in('invoice_id', invoiceIds)
+      .eq('status', 'completed')
+
+    if (completedPayments) {
+      for (const p of completedPayments) {
+        paymentsByInvoice[p.invoice_id] = (paymentsByInvoice[p.invoice_id] ?? 0) + Number(p.amount)
+      }
+    }
+  }
+
+  // ── Compute per-invoice amounts ─────────────────────────────────────────────
+  type InvoiceWithAmounts = (typeof invoices extends (infer T)[] | null | undefined ? T : never) & {
+    _amountPaid: number
+    _amountRemaining: number
+  }
+
+  const invoicesWithAmounts: InvoiceWithAmounts[] = (invoices ?? []).map(invoice => {
+    const paid = paymentsByInvoice[invoice.id] ?? 0
+    const remaining = Math.max(0, Number(invoice.amount_due) - paid)
+    return { ...invoice, _amountPaid: paid, _amountRemaining: remaining }
+  })
+
+  // ── Compute outstanding totals ──────────────────────────────────────────────
+  const overdueInvoices = invoicesWithAmounts.filter(i => i.status === 'overdue')
+  const dueInvoices = invoicesWithAmounts.filter(i => i.status === 'due')
+  const paidInvoices = invoicesWithAmounts.filter(i => i.status === 'paid')
+  const partialInvoices = invoicesWithAmounts.filter(
+    i => i.status !== 'paid' && i._amountPaid > 0 && i._amountPaid < Number(i.amount_due)
   )
-  const overdueAmount = overdueInvoices.reduce((acc, i) => acc + Number(i.amount_due), 0)
+
+  const outstandingAmount = invoicesWithAmounts
+    .filter(i => i.status !== 'paid')
+    .reduce((acc, i) => acc + i._amountRemaining, 0)
+  const overdueAmount = overdueInvoices.reduce((acc, i) => acc + i._amountRemaining, 0)
+  const paidThisMonth = paidInvoices
+    .filter(i => {
+      const d = new Date(i.period_from)
+      const now = new Date()
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+    })
+    .reduce((acc, i) => acc + Number(i.amount_due), 0)
+  const partialAmount = partialInvoices.reduce((acc, i) => acc + i._amountRemaining, 0)
+
   const currency = invoices?.[0]?.currency ?? 'UGX'
+
+  // ── Filter invoices for display ─────────────────────────────────────────────
+  const activeFilter: FilterKey =
+    (searchParams?.filter as FilterKey | undefined) &&
+    FILTER_TABS.some(t => t.key === searchParams?.filter)
+      ? (searchParams!.filter as FilterKey)
+      : 'all'
+
+  const filteredInvoices = invoicesWithAmounts.filter(invoice => {
+    if (activeFilter === 'all') return true
+    if (activeFilter === 'partial') {
+      return invoice._amountPaid > 0 && invoice._amountPaid < Number(invoice.amount_due) && invoice.status !== 'paid'
+    }
+    return invoice.status === activeFilter
+  })
 
   const getUtilityIcon = (type: string) => {
     switch (type) {
@@ -93,7 +169,93 @@ export default async function TenantInvoicesPage() {
         description="View and pay your rent and utility bills in UGX."
       />
 
-      {/* Outstanding Summary Banner */}
+      {/* ── Premium Summary Bar ─────────────────────────────────────────────── */}
+      {invoicesWithAmounts.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          {/* Outstanding (red) */}
+          <div className={cn(
+            'rounded-2xl border p-5 space-y-2',
+            outstandingAmount > 0
+              ? 'bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-950/10 border-red-200 dark:border-red-900/50'
+              : 'bg-card border-border'
+          )}>
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                'w-7 h-7 rounded-lg flex items-center justify-center',
+                outstandingAmount > 0 ? 'bg-red-100 dark:bg-red-900/40' : 'bg-muted/30'
+              )}>
+                <AlertCircle size={14} className={outstandingAmount > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'} aria-hidden="true" />
+              </div>
+              <p className={cn(
+                'text-[10px] font-black uppercase tracking-widest',
+                outstandingAmount > 0 ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'
+              )}>Outstanding</p>
+            </div>
+            <p className={cn('text-2xl font-black', outstandingAmount > 0 ? 'text-red-700 dark:text-red-300' : 'text-muted-foreground')}>
+              {formatCurrency(outstandingAmount, currency)}
+            </p>
+            <p className={cn('text-[10px] font-bold', outstandingAmount > 0 ? 'text-red-600/70 dark:text-red-400/70' : 'text-muted-foreground')}>
+              {overdueInvoices.length + dueInvoices.length} invoice{(overdueInvoices.length + dueInvoices.length) !== 1 ? 's' : ''} unpaid
+            </p>
+          </div>
+
+          {/* Partial (amber) */}
+          <div className={cn(
+            'rounded-2xl border p-5 space-y-2',
+            partialInvoices.length > 0
+              ? 'bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-950/10 border-amber-200 dark:border-amber-900/50'
+              : 'bg-card border-border'
+          )}>
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                'w-7 h-7 rounded-lg flex items-center justify-center',
+                partialInvoices.length > 0 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-muted/30'
+              )}>
+                <SplitSquareHorizontal size={14} className={partialInvoices.length > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'} aria-hidden="true" />
+              </div>
+              <p className={cn(
+                'text-[10px] font-black uppercase tracking-widest',
+                partialInvoices.length > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'
+              )}>Partially Paid</p>
+            </div>
+            <p className={cn('text-2xl font-black', partialInvoices.length > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground')}>
+              {partialInvoices.length > 0 ? formatCurrency(partialAmount, currency) : '—'}
+            </p>
+            <p className={cn('text-[10px] font-bold', partialInvoices.length > 0 ? 'text-amber-600/70 dark:text-amber-400/70' : 'text-muted-foreground')}>
+              {partialInvoices.length} invoice{partialInvoices.length !== 1 ? 's' : ''} in progress
+            </p>
+          </div>
+
+          {/* Paid this month (green) */}
+          <div className={cn(
+            'rounded-2xl border p-5 space-y-2',
+            paidThisMonth > 0
+              ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-950/10 border-emerald-200 dark:border-emerald-900/50'
+              : 'bg-card border-border'
+          )}>
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                'w-7 h-7 rounded-lg flex items-center justify-center',
+                paidThisMonth > 0 ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-muted/30'
+              )}>
+                <CheckCircle2 size={14} className={paidThisMonth > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'} aria-hidden="true" />
+              </div>
+              <p className={cn(
+                'text-[10px] font-black uppercase tracking-widest',
+                paidThisMonth > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'
+              )}>Paid This Month</p>
+            </div>
+            <p className={cn('text-2xl font-black', paidThisMonth > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground')}>
+              {paidThisMonth > 0 ? formatCurrency(paidThisMonth, currency) : '—'}
+            </p>
+            <p className={cn('text-[10px] font-bold', paidThisMonth > 0 ? 'text-emerald-600/70 dark:text-emerald-400/70' : 'text-muted-foreground')}>
+              {paidInvoices.length} invoice{paidInvoices.length !== 1 ? 's' : ''} paid total
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Outstanding / All-clear banner ──────────────────────────────────── */}
       {outstandingAmount > 0 && (
         <div className={
           overdueAmount > 0
@@ -128,6 +290,12 @@ export default async function TenantInvoicesPage() {
                   : `${dueInvoices.length} invoice${dueInvoices.length !== 1 ? 's' : ''} due — pay before the deadline`
                 }
               </p>
+              {partialInvoices.length > 0 && (
+                <p className="text-xs font-bold text-amber-600/80 dark:text-amber-400/80 flex items-center gap-1 mt-0.5">
+                  <SplitSquareHorizontal size={12} />
+                  {partialInvoices.length} partially paid — keep going!
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-4 sm:flex-col sm:items-end sm:gap-1">
@@ -152,8 +320,8 @@ export default async function TenantInvoicesPage() {
         </div>
       )}
 
-      {/* All-clear banner when everything is paid */}
-      {outstandingAmount === 0 && invoices && invoices.length > 0 && (
+      {/* All-clear */}
+      {outstandingAmount === 0 && invoicesWithAmounts.length > 0 && (
         <div className="rounded-[32px] p-6 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/50 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
             <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400" />
@@ -165,14 +333,15 @@ export default async function TenantInvoicesPage() {
         </div>
       )}
 
-      {/* Rent Invoices */}
+      {/* ── Rent Invoices ────────────────────────────────────────────────────── */}
       <section className="space-y-6" aria-labelledby="rent-invoices-heading">
-        <div className="flex items-center justify-between">
-          <h2 id="rent-invoices-heading" className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 id="rent-invoices-heading" className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <Receipt size={13} aria-hidden="true" />
             Rent Invoices
           </h2>
-          {invoices && invoices.length > 0 && (
-            <div className="flex items-center gap-3">
+          {invoicesWithAmounts.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
               {overdueInvoices.length > 0 && (
                 <span className="text-[10px] font-black text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 px-2.5 py-1 rounded-full uppercase tracking-wide">
                   {overdueInvoices.length} Overdue
@@ -183,17 +352,57 @@ export default async function TenantInvoicesPage() {
                   {dueInvoices.length} Due
                 </span>
               )}
+              {partialInvoices.length > 0 && (
+                <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                  {partialInvoices.length} Partial
+                </span>
+              )}
               <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2.5 py-1 rounded-full uppercase tracking-wide">
                 {paidInvoices.length} Paid
               </span>
             </div>
           )}
         </div>
+
+        {/* Filter tabs */}
+        {invoicesWithAmounts.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap p-1 bg-muted/30 rounded-2xl w-fit" role="tablist" aria-label="Filter invoices">
+            {FILTER_TABS.map(tab => {
+              const isActive = activeFilter === tab.key
+              const count = (() => {
+                if (tab.key === 'all') return invoicesWithAmounts.length
+                if (tab.key === 'partial') return partialInvoices.length
+                return invoicesWithAmounts.filter(i => i.status === tab.key).length
+              })()
+              if (count === 0 && tab.key !== 'all') return null
+              return (
+                <Link
+                  key={tab.key}
+                  href={tab.key === 'all' ? '/tenant/invoices' : `/tenant/invoices?filter=${tab.key}`}
+                  role="tab"
+                  aria-selected={isActive}
+                  className={cn(
+                    'px-4 py-1.5 rounded-xl text-[11px] font-black transition-all',
+                    isActive
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {tab.label}
+                  <span className={isActive ? 'ml-1.5 opacity-60' : 'ml-1.5 opacity-40'}>{count}</span>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Invoice cards */}
         <div className="grid gap-3 md:gap-4">
-          {invoices && invoices.length > 0 ? (
-            invoices.map((invoice) => {
+          {filteredInvoices.length > 0 ? (
+            filteredInvoices.map((invoice) => {
               const property = invoice.properties as Property
               const unit = invoice.units as Unit
+              const hasPartialPayment = invoice._amountPaid > 0 && invoice._amountPaid < Number(invoice.amount_due)
               return (
                 <InvoiceCard
                   key={invoice.id}
@@ -205,23 +414,31 @@ export default async function TenantInvoicesPage() {
                   status={invoice.status}
                   propertyName={property?.name ?? 'Property'}
                   unitLabel={unit?.label ?? 'Unit'}
+                  amountPaid={hasPartialPayment ? invoice._amountPaid : undefined}
+                  amountRemaining={hasPartialPayment ? invoice._amountRemaining : undefined}
                 />
               )
             })
-          ) : (
+          ) : invoicesWithAmounts.length === 0 ? (
             <EmptyState
               icon={Receipt}
               title={copy.tenant.noInvoices}
               description={copy.tenant.noInvoicesDesc}
               variant="inline"
             />
+          ) : (
+            <div className="py-10 flex flex-col items-center gap-3 text-center">
+              <TrendingDown size={28} className="text-muted-foreground/20" aria-hidden="true" />
+              <p className="text-sm font-medium text-muted-foreground">No {activeFilter === 'all' ? '' : activeFilter} invoices found.</p>
+            </div>
           )}
         </div>
       </section>
 
-      {/* Utility Bills */}
+      {/* ── Utility Bills ────────────────────────────────────────────────────── */}
       <section className="space-y-6" aria-labelledby="utility-bills-heading">
-        <h2 id="utility-bills-heading" className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+        <h2 id="utility-bills-heading" className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          <Zap size={13} aria-hidden="true" />
           Utility Bills
         </h2>
         <div className="grid gap-3 md:gap-4">
@@ -232,12 +449,9 @@ export default async function TenantInvoicesPage() {
                 className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-px transition-all duration-200 border-l-4 border-l-muted"
               >
                 <div className="p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-                  {/* Icon */}
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${getUtilityIconBg(bill.type)}`}>
                     {getUtilityIcon(bill.type)}
                   </div>
-
-                  {/* Content */}
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-base font-black text-foreground">{getUtilityLabel(bill.type)}</span>
@@ -247,8 +461,6 @@ export default async function TenantInvoicesPage() {
                       {bill.notes || 'No additional notes'}
                     </p>
                   </div>
-
-                  {/* Trailing */}
                   <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 shrink-0">
                     <MoneyDisplay amount={Number(bill.amount)} currency={bill.currency} size="lg" emphasis="primary" />
                     {bill.status !== 'paid' && (

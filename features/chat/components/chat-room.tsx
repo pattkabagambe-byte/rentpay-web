@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/supabase/client'
 import { sendMessage } from '../actions'
-import { Send, User, ChevronLeft, Loader2, MessageSquare } from 'lucide-react'
+import { Send, ChevronLeft, Loader2, MessageSquare, Check, CheckCheck } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { formatDateTime } from '@/lib/format'
 import { useToast } from '@/components/ui/toast'
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type Message = {
   id: string
@@ -16,7 +17,8 @@ type Message = {
   sent_at: string
 }
 
-/** Returns a human-readable label for a date (Today / Yesterday / formatted date) */
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function getDateLabel(dateStr: string): string {
   const date = new Date(dateStr)
   const today = new Date()
@@ -33,7 +35,6 @@ function getDateLabel(dateStr: string): string {
   return date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
-/** Extract just the time portion from a formatted datetime string */
 function formatTime(dateStr: string): string {
   try {
     return new Date(dateStr).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
@@ -42,22 +43,38 @@ function formatTime(dateStr: string): string {
   }
 }
 
+// Deterministic avatar colour
+const AVATAR_COLORS = [
+  'bg-emerald-500', 'bg-cyan-500', 'bg-violet-500', 'bg-amber-500',
+  'bg-rose-500', 'bg-sky-500', 'bg-teal-500', 'bg-indigo-500',
+]
+function getAvatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export function ChatRoom({
   tenancyId,
   initialMessages,
   currentUserId,
   otherParty,
   tenancyInfo,
+  currentUserRole,
 }: {
   tenancyId: string
   initialMessages: Message[]
   currentUserId: string
   otherParty: { full_name: string; avatar_url?: string | null }
   tenancyInfo: { properties: { name: string }; units: { label: string } }
+  currentUserRole?: 'landlord' | 'tenant'
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [inputText, setInputText] = useState('')
   const [sending, setSending] = useState(false)
+  const [isTyping] = useState(false) // placeholder — no real typing indicator yet
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -67,7 +84,6 @@ export function ChatRoom({
     messagesEndRef.current?.scrollIntoView({ behavior })
   }
 
-  // Scroll immediately on mount (no animation), then smoothly for new messages
   useEffect(() => { scrollToBottom('instant') }, [])
   useEffect(() => { scrollToBottom('smooth') }, [messages])
 
@@ -84,7 +100,6 @@ export function ChatRoom({
         },
         (payload: { new: Message }) => {
           setMessages((prev) => {
-            // Deduplicate in case the optimistic update and realtime event race
             if (prev.some((m) => m.id === payload.new.id)) return prev
             return [...prev, payload.new]
           })
@@ -92,9 +107,7 @@ export function ChatRoom({
       )
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [tenancyId, supabase])
 
   const handleSend = async (e: React.FormEvent) => {
@@ -108,13 +121,13 @@ export function ChatRoom({
     const result = await sendMessage(tenancyId, trimmed)
     if (result.error) {
       toast(result.error, 'error')
-      setInputText(trimmed) // restore on failure
+      setInputText(trimmed)
     }
     setSending(false)
     inputRef.current?.focus()
   }
 
-  // Group messages by calendar day for date separators
+  // Group messages by calendar day
   const groupedMessages: Array<{ dateLabel: string; msgs: Message[] }> = []
   for (const msg of messages) {
     const label = getDateLabel(msg.sent_at)
@@ -126,134 +139,215 @@ export function ChatRoom({
     }
   }
 
+  const otherName = otherParty.full_name ?? '?'
+  const otherInitials = otherName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
+  const otherAvatarBg = getAvatarColor(otherName)
+  const roleLabel = currentUserRole === 'landlord' ? 'Tenant' : 'Landlord'
+
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] md:h-[calc(100vh-16rem)] max-w-4xl mx-auto bg-background border-2 border-muted/50 rounded-[40px] overflow-hidden shadow-xl">
-      {/* Chat Header */}
-      <div className="p-6 border-b-2 border-muted/50 bg-background/80 backdrop-blur-md flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)] max-w-4xl mx-auto bg-card border-2 border-border rounded-3xl overflow-hidden shadow-xl">
+
+      {/* ── Chat Header ─────────────────────────────────────────────────────── */}
+      <div className="p-4 md:p-5 border-b-2 border-border bg-card/95 backdrop-blur-md flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
           <Link
             href="/messages"
-            className="md:hidden p-2 hover:bg-muted rounded-full transition-colors"
+            className="md:hidden p-2 hover:bg-muted rounded-xl transition-colors text-muted-foreground hover:text-foreground"
             aria-label="Back to messages"
           >
-            <ChevronLeft size={24} aria-hidden="true" />
+            <ChevronLeft size={22} aria-hidden="true" />
           </Link>
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white shadow-md overflow-hidden shrink-0">
-            {otherParty.avatar_url ? (
-              <img
-                src={otherParty.avatar_url}
-                alt={otherParty.full_name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User size={24} className="text-primary" aria-hidden="true" />
-            )}
+          <div className="relative">
+            <div className={cn(
+              'w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm overflow-hidden',
+              !otherParty.avatar_url && otherAvatarBg
+            )}>
+              {otherParty.avatar_url ? (
+                <img src={otherParty.avatar_url} alt={otherName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-black text-sm">{otherInitials}</span>
+              )}
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-background" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="font-black text-lg leading-tight">{otherParty.full_name}</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            <div className="flex items-center gap-2">
+              <h3 className="font-black text-base leading-tight">{otherName}</h3>
+              <span className={cn(
+                'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border',
+                currentUserRole === 'landlord'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
+                  : 'bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800/50'
+              )}>
+                {roleLabel}
+              </span>
+            </div>
+            <p className="text-[10px] font-bold text-muted-foreground">
               {tenancyInfo.properties.name} &bull; {tenancyInfo.units.label}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* ── Messages Area ───────────────────────────────────────────────────── */}
       <div
-        className="flex-1 overflow-y-auto p-6 md:p-8 bg-muted/5"
+        className="flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6 bg-muted/5 space-y-1"
         role="log"
         aria-label="Chat messages"
         aria-live="polite"
       >
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center gap-4 opacity-40 select-none">
-            <div className="w-16 h-16 rounded-[20px] bg-muted flex items-center justify-center">
-              <MessageSquare size={32} aria-hidden="true" />
+          <div className="h-full flex flex-col items-center justify-center text-center gap-4 select-none">
+            <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center">
+              <MessageSquare size={28} className="text-muted-foreground/30" aria-hidden="true" />
             </div>
-            <div>
-              <p className="font-black uppercase tracking-widest text-xs">No messages yet</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Send the first message to start the conversation.
-              </p>
+            <div className="space-y-1">
+              <p className="font-black text-sm text-muted-foreground">No messages yet</p>
+              <p className="text-xs text-muted-foreground/60">Send the first message to start the conversation.</p>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {groupedMessages.map(({ dateLabel, msgs }) => (
-              <div key={dateLabel} className="space-y-3">
-                {/* Date separator */}
-                <div className="flex items-center gap-3 px-2">
-                  <div className="flex-1 h-px bg-muted/60" aria-hidden="true" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+              <div key={dateLabel} className="space-y-1">
+                {/* Date divider */}
+                <div className="flex items-center gap-3 py-2">
+                  <div className="flex-1 h-px bg-border/60" aria-hidden="true" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap bg-background px-2 py-1 rounded-full border border-border">
                     {dateLabel}
                   </span>
-                  <div className="flex-1 h-px bg-muted/60" aria-hidden="true" />
+                  <div className="flex-1 h-px bg-border/60" aria-hidden="true" />
                 </div>
 
                 {/* Messages for this day */}
-                {msgs.map((msg, idx) => {
-                  const isMe = msg.sender_id === currentUserId
-                  const prevMsg = msgs[idx - 1]
-                  // Collapse avatar gap when consecutive messages from same sender
-                  const sameAsPrev = prevMsg && prevMsg.sender_id === msg.sender_id
+                <div className="space-y-1">
+                  {msgs.map((msg, idx) => {
+                    const isMe = msg.sender_id === currentUserId
+                    const prevMsg = msgs[idx - 1]
+                    const nextMsg = msgs[idx + 1]
+                    const sameAsPrev = prevMsg && prevMsg.sender_id === msg.sender_id
+                    const sameAsNext = nextMsg && nextMsg.sender_id === msg.sender_id
 
-                  return (
-                    <div
-                      key={msg.id}
-                      className={cn(
-                        'flex flex-col max-w-[78%]',
-                        isMe ? 'ml-auto items-end' : 'mr-auto items-start',
-                        sameAsPrev ? 'mt-0.5' : 'mt-3'
-                      )}
-                    >
+                    // Bubble corner rounding: first in run = squared corner on sender side
+                    const bubbleClass = cn(
+                      'inline-block px-4 py-2.5 text-sm font-medium break-words max-w-full',
+                      'shadow-sm',
+                      isMe
+                        ? cn(
+                            'text-white',
+                            'bg-gradient-to-br from-emerald-500 to-emerald-600',
+                            !sameAsPrev && 'rounded-tl-2xl rounded-tr-md',
+                            sameAsPrev && sameAsNext && 'rounded-md',
+                            sameAsPrev && !sameAsNext && 'rounded-tl-2xl rounded-br-md',
+                            !sameAsPrev && sameAsNext && 'rounded-tl-2xl rounded-tr-md',
+                            !sameAsPrev && !sameAsNext && 'rounded-2xl rounded-tr-md',
+                          )
+                        : cn(
+                            'bg-background border border-border text-foreground dark:bg-card',
+                            !sameAsPrev && 'rounded-tl-md rounded-tr-2xl',
+                            sameAsPrev && sameAsNext && 'rounded-md',
+                            sameAsPrev && !sameAsNext && 'rounded-tr-2xl rounded-bl-md',
+                            !sameAsPrev && sameAsNext && 'rounded-tl-md rounded-tr-2xl',
+                            !sameAsPrev && !sameAsNext && 'rounded-tl-md rounded-2xl',
+                          )
+                    )
+
+                    return (
                       <div
+                        key={msg.id}
                         className={cn(
-                          'px-5 py-3.5 text-sm font-medium shadow-sm break-words',
-                          isMe
-                            ? 'bg-primary text-white rounded-[20px] rounded-tr-sm'
-                            : 'bg-white border-2 border-muted/50 text-foreground rounded-[20px] rounded-tl-sm'
+                          'flex flex-col',
+                          isMe ? 'items-end' : 'items-start',
+                          sameAsPrev ? 'mt-0.5' : 'mt-3'
                         )}
                       >
-                        {msg.text}
+                        <div className={cn('max-w-[75%] md:max-w-[65%]', isMe ? 'items-end' : 'items-start')}>
+                          <div className={bubbleClass}>
+                            {msg.text}
+                          </div>
+                          {/* Timestamp + read receipt */}
+                          {(!sameAsNext) && (
+                            <div className={cn(
+                              'flex items-center gap-1 mt-1 px-1',
+                              isMe ? 'justify-end' : 'justify-start'
+                            )}>
+                              <time
+                                dateTime={msg.sent_at}
+                                className="text-[9px] font-bold text-muted-foreground/60 tabular-nums"
+                              >
+                                {formatTime(msg.sent_at)}
+                              </time>
+                              {isMe && (
+                                <CheckCheck size={11} className="text-muted-foreground/50" aria-hidden="true" />
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <time
-                        dateTime={msg.sent_at}
-                        className="text-[9px] font-bold text-muted-foreground/70 mt-1 px-1 tabular-nums"
-                      >
-                        {formatTime(msg.sent_at)}
-                      </time>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
             ))}
+
+            {/* Typing indicator placeholder */}
+            {isTyping && (
+              <div className="flex items-start mt-3">
+                <div className="bg-background border border-border rounded-tl-md rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-1" aria-label="Other party is typing">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce"
+                        style={{ animationDelay: `${i * 0.15}s` }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-5 md:p-6 bg-background border-t-2 border-muted/50">
-        <form onSubmit={handleSend} className="flex gap-3" aria-label="Send a message">
+      {/* ── Input Area ──────────────────────────────────────────────────────── */}
+      <div className="p-4 md:p-5 bg-card border-t-2 border-border">
+        <form onSubmit={handleSend} className="flex gap-2.5 items-center" aria-label="Send a message">
           <input
             ref={inputRef}
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type a message..."
+            placeholder="Type a message…"
             maxLength={2000}
             aria-label="Message text"
-            className="flex-1 px-6 py-4 rounded-[24px] border-2 border-muted focus:border-primary focus:outline-none transition-all font-medium text-sm"
+            className={cn(
+              'flex-1 px-5 py-3.5 rounded-full text-sm font-medium',
+              'bg-muted/40 border-2 border-transparent',
+              'focus:border-emerald-500/50 focus:bg-background focus:outline-none',
+              'transition-all placeholder:text-muted-foreground/50'
+            )}
           />
           <button
             type="submit"
             disabled={!inputText.trim() || sending}
             aria-label={sending ? 'Sending…' : 'Send message'}
-            className="bg-primary text-white p-4 rounded-[20px] shadow-xl shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center justify-center shrink-0"
+            className={cn(
+              'w-12 h-12 rounded-full flex items-center justify-center shrink-0',
+              'bg-gradient-to-br from-emerald-500 to-emerald-600',
+              'shadow-lg shadow-emerald-500/20',
+              'hover:from-emerald-600 hover:to-emerald-700',
+              'disabled:opacity-40 disabled:cursor-not-allowed',
+              'transition-all duration-150',
+              'text-white'
+            )}
           >
             {sending
-              ? <Loader2 className="animate-spin h-6 w-6" aria-hidden="true" />
-              : <Send size={24} aria-hidden="true" />}
+              ? <Loader2 className="animate-spin h-5 w-5" aria-hidden="true" />
+              : <Send size={19} aria-hidden="true" />}
           </button>
         </form>
       </div>

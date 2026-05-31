@@ -17,6 +17,7 @@ export async function initiateInvoicePayment(input: {
   invoiceId: string
   method: 'mobile_money' | 'card'
   phone?: string
+  paymentAmount?: number  // if omitted, pays full amount_due
 }) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -43,6 +44,15 @@ export async function initiateInvoicePayment(input: {
     return { error: 'This invoice has already been paid.' }
   }
 
+  // Compute effective payment amount
+  const amountDue = Number(invoice.amount_due)
+  if (input.paymentAmount && input.paymentAmount > amountDue) {
+    return { error: 'Payment amount cannot exceed the invoice total.' }
+  }
+  const effectiveAmount = input.paymentAmount && input.paymentAmount < amountDue
+    ? input.paymentAmount
+    : amountDue
+
   const narrative = `RentPilot rent — ${invoice.properties?.name ?? 'Property'}`
 
   const { data: payment, error: payInsertError } = await supabase
@@ -52,7 +62,7 @@ export async function initiateInvoicePayment(input: {
       tenancy_id: invoice.tenancy_id,
       payer_id: user.id,
       landlord_id: invoice.landlord_id,
-      amount: invoice.amount_due,
+      amount: effectiveAmount,
       currency: invoice.currency,
       provider: 'yo',
       provider_reference: null,
@@ -80,7 +90,7 @@ export async function initiateInvoicePayment(input: {
     }
 
     const redirectUrl = buildYoCardCheckoutUrl({
-      amount: Number(invoice.amount_due),
+      amount: effectiveAmount,
       currency: invoice.currency,
       externalReference,
       returnUrl,
@@ -106,7 +116,7 @@ export async function initiateInvoicePayment(input: {
   try {
     const yoResponse = await yoDepositFunds({
       msisdn,
-      amount: Number(invoice.amount_due),
+      amount: effectiveAmount,
       narrative,
       externalReference,
     })
@@ -153,6 +163,45 @@ export async function initiateInvoicePayment(input: {
       error: error instanceof Error ? error.message : 'unknown',
     }, 'error')
     return { error: 'Could not connect to Yo! Payments. Please try again.' }
+  }
+}
+
+export async function getInvoicePaymentSummary(invoiceId: string) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // Get invoice (must belong to user as tenant or landlord)
+  const { data: invoice } = await supabase
+    .from('invoices')
+    .select('id, amount_due, currency, status, tenant_id, landlord_id')
+    .eq('id', invoiceId)
+    .or(`tenant_id.eq.${user.id},landlord_id.eq.${user.id}`)
+    .single()
+
+  if (!invoice) return null
+
+  // Sum completed payments for this invoice
+  const { data: payments } = await supabase
+    .from('payments')
+    .select('amount, created_at, method, status')
+    .eq('invoice_id', invoiceId)
+    .eq('status', 'completed')
+    .order('created_at', { ascending: false })
+
+  const amountPaid = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0
+  const amountDue = Number(invoice.amount_due)
+  const amountRemaining = Math.max(0, amountDue - amountPaid)
+
+  return {
+    amountDue,
+    amountPaid,
+    amountRemaining,
+    currency: invoice.currency,
+    isPartial: amountPaid > 0 && amountPaid < amountDue,
+    isPaid: amountPaid >= amountDue,
+    paymentCount: payments?.length ?? 0,
+    payments: payments ?? [],
   }
 }
 

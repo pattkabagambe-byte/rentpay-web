@@ -118,6 +118,7 @@ export const invoicePaymentSchema = z
       message: 'Select a payment method',
     }),
     phone: z.string().optional(),
+    paymentAmount: z.number().positive('Payment amount must be greater than zero').optional(),
   })
   .superRefine((data, ctx) => {
     if (data.method === 'mobile_money') {

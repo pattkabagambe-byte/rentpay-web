@@ -18,6 +18,7 @@ import {
   Gavel,
   MoreHorizontal,
   X,
+  Search,
 } from 'lucide-react'
 
 interface NavItem {
@@ -34,6 +35,7 @@ const landlordItems: NavItem[] = [
   { title: 'Wallet',     href: '/wallet',              icon: <Wallet          className="h-4.5 w-4.5" />, mobilePrimary: true,  section: 'Finance'  },
   { title: 'URA Tax',    href: '/landlord/tax',        icon: <Gavel           className="h-4.5 w-4.5" />,                       section: 'Finance'  },
   { title: 'Messages',   href: '/messages',            icon: <MessageSquare   className="h-4.5 w-4.5" />, mobilePrimary: true,  section: 'Communication' },
+  { title: 'Listings',   href: '/landlord/listings',   icon: <Search          className="h-4.5 w-4.5" />, mobilePrimary: false, section: 'Overview' },
   { title: 'Settings',   href: '/settings',            icon: <Settings        className="h-4.5 w-4.5" />,                       section: 'Account'  },
 ]
 

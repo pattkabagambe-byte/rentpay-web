@@ -76,3 +76,46 @@ export interface Tenancy {
   ended_at?: string;
   created_at: string;
 }
+
+export interface PropertyListing {
+  id: string;
+  landlord_id: string;
+  property_id?: string;
+  title: string;
+  description?: string;
+  property_type: 'apartment' | 'house' | 'studio' | 'commercial' | 'room' | 'mansion';
+  bedrooms: number;
+  bathrooms: number;
+  rent_amount: number;
+  currency: string;
+  deposit_amount?: number;
+  available_from?: string;
+  location_text: string;
+  location_area?: string;
+  amenities: string[];
+  photo_urls: string[];
+  contact_phone?: string;
+  contact_email?: string;
+  status: 'active' | 'rented' | 'paused';
+  views: number;
+  is_featured: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceWithPayments {
+  id: string;
+  tenancy_id: string;
+  tenant_id: string;
+  landlord_id: string;
+  amount_due: number;
+  amount_paid: number;
+  amount_remaining: number;
+  currency: string;
+  status: 'due' | 'overdue' | 'paid' | 'partial';
+  due_date: string;
+  period_from: string;
+  period_to: string;
+  invoice_number: string;
+  created_at: string;
+}

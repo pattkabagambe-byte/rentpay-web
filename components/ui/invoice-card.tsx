@@ -5,12 +5,13 @@ import { cn } from '@/lib/utils'
 import { MoneyDisplay } from './money-display'
 import { DateDisplay } from './date-display'
 import { Button } from './button'
+import { formatCurrency } from '@/lib/format'
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-export type InvoiceStatus = 'paid' | 'due' | 'overdue' | 'pending'
+export type InvoiceStatus = 'paid' | 'due' | 'overdue' | 'pending' | 'partial'
 
 interface InvoiceCardProps {
   id: string
@@ -24,6 +25,10 @@ interface InvoiceCardProps {
   /** Show an inline "Pay Now" button for due/overdue invoices */
   showPayButton?: boolean
   onPay?: (id: string) => void
+  /** Amount already paid towards this invoice (for partial payment progress) */
+  amountPaid?: number
+  /** Amount still outstanding (may differ from amount when partial payments exist) */
+  amountRemaining?: number
 }
 
 /* -------------------------------------------------------------------------- */
@@ -82,6 +87,16 @@ const statusConfig: Record<string, InvoiceStatusConfig> = {
     amountEmphasis: 'muted',
     urgency: false,
   },
+  partial: {
+    icon: Clock,
+    label: 'Partially paid',
+    iconColor: 'text-amber-500 dark:text-amber-400',
+    badgeBg: 'bg-amber-50 dark:bg-amber-950/50',
+    badgeText: 'text-amber-700 dark:text-amber-400',
+    borderAccent: 'border-l-amber-400 dark:border-l-amber-500',
+    amountEmphasis: 'primary',
+    urgency: false,
+  },
 }
 
 const fallbackStatus = statusConfig.pending
@@ -101,10 +116,16 @@ export function InvoiceCard({
   unitLabel,
   showPayButton = true,
   onPay,
+  amountPaid,
+  amountRemaining,
 }: InvoiceCardProps) {
   const sc = statusConfig[status] ?? fallbackStatus
   const StatusIcon = sc.icon
-  const canPay = (status === 'due' || status === 'overdue') && showPayButton
+  const canPay = (status === 'due' || status === 'overdue' || status === 'partial') && showPayButton
+
+  // Determine if we should show a partial progress bar
+  const hasPartial = typeof amountPaid === 'number' && amountPaid > 0 && amountPaid < amount
+  const paidPct = hasPartial && amount > 0 ? Math.min((amountPaid! / amount) * 100, 100) : 0
 
   const cardContent = (
     <div
@@ -159,6 +180,28 @@ export function InvoiceCard({
           <p className="text-sm text-muted-foreground font-medium truncate">
             {propertyName} &bull; {unitLabel}
           </p>
+
+          {/* Partial payment progress bar */}
+          {hasPartial && (
+            <div className="pt-1.5 space-y-1">
+              <div className="flex h-1.5 rounded-full overflow-hidden bg-muted/40">
+                <div
+                  className="bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-500"
+                  style={{ width: `${paidPct}%` }}
+                />
+              </div>
+              <p className="text-[10px] font-bold text-muted-foreground">
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(amountPaid!, currency)} paid
+                </span>
+                {typeof amountRemaining === 'number' && (
+                  <span className="ml-1.5">
+                    &middot; {formatCurrency(amountRemaining, currency)} remaining
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Trailing: due date + amount + optional pay button */}
@@ -171,9 +214,9 @@ export function InvoiceCard({
             </span>
           </div>
 
-          {/* Amount */}
+          {/* Amount — show remaining if partial, else full amount */}
           <MoneyDisplay
-            amount={amount}
+            amount={hasPartial && typeof amountRemaining === 'number' ? amountRemaining : amount}
             currency={currency}
             size="lg"
             emphasis={sc.amountEmphasis}

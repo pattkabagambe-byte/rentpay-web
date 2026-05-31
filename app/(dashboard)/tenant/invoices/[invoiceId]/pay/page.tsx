@@ -18,7 +18,18 @@ export default async function PayInvoicePage({ params }: { params: { invoiceId: 
 
   if (!invoice) notFound()
 
-  if (invoice.status === 'paid') {
+  // Fetch completed payments to compute real outstanding balance
+  const { data: completedPayments } = await supabase
+    .from('payments')
+    .select('amount')
+    .eq('invoice_id', params.invoiceId)
+    .eq('status', 'completed')
+
+  const amountPaid = completedPayments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0
+  const amountRemaining = Math.max(0, Number(invoice.amount_due) - amountPaid)
+
+  // Redirect only if fully paid (by DB status or by computed balance)
+  if (invoice.status === 'paid' || amountRemaining === 0) {
     redirect(`/tenant/invoices/${params.invoiceId}`)
   }
 
@@ -30,6 +41,8 @@ export default async function PayInvoicePage({ params }: { params: { invoiceId: 
       invoice={{
         id: invoice.id,
         amount_due: Number(invoice.amount_due),
+        amount_paid: amountPaid,
+        amount_remaining: amountRemaining,
         currency: invoice.currency,
         due_date: invoice.due_date,
         period_from: invoice.period_from,
