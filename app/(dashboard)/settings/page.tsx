@@ -2,6 +2,7 @@ import { createClient } from '@/supabase/server'
 import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui/page-header'
 import Link from 'next/link'
+import { brand } from '@/lib/branding'
 import {
     ShieldCheck,
     Lock,
@@ -236,7 +237,7 @@ export default async function SettingsPage() {
                 iconBg="bg-cyan-100"
                 iconColor="text-cyan-600"
                 title="Privacy Policy"
-                subtitle="Review how RentPay handles your data."
+                subtitle="Review how RentPilot handles your data."
                 href="/privacy"
               />
             </div>
@@ -256,7 +257,7 @@ export default async function SettingsPage() {
                 iconColor="text-green-600"
                 title="WhatsApp Support"
                 subtitle="Quick chat for immediate assistance."
-                href="https://wa.me/256000000000"
+                href={brand.whatsappUrl}
                 external
                 right={<ExternalLink size={16} className="text-muted-foreground group-hover:text-green-600 transition-colors" />}
               />
@@ -266,7 +267,7 @@ export default async function SettingsPage() {
                 iconColor="text-blue-600"
                 title="Email Support"
                 subtitle="Send us detailed reports or inquiries."
-                href="mailto:support@rentpay.ug"
+                href={`mailto:${brand.supportEmail}`}
                 external
                 right={<ExternalLink size={16} className="text-muted-foreground group-hover:text-blue-600 transition-colors" />}
               />

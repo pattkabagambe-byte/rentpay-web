@@ -397,7 +397,7 @@ export function TenantOnboardingForm({ profile }: { profile: UserProfile }) {
           <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors leading-relaxed">
             I accept the{' '}
             <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline underline-offset-2">
-              RentPay Tenancy Terms
+              RentPilot Tenancy Terms
             </a>
             . My National ID is stored securely and used only for tenancy verification purposes.
           </span>

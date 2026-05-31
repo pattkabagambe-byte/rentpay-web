@@ -165,7 +165,7 @@ export function UnitForm({ propertyId, initialData }: { propertyId: string, init
           <FormField
             label="Currency"
             htmlFor="currency"
-            hint="All RentPay Uganda transactions use UGX"
+            hint="All RentPilot Uganda transactions use UGX"
           >
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-muted bg-muted/30 text-muted-foreground">
               <Lock size={14} aria-hidden="true" />

@@ -58,7 +58,7 @@ export function DeleteAccountButton({ deletionRequested }: { deletionRequested?:
         open={open}
         onClose={() => !loading && setOpen(false)}
         title="Delete your account?"
-        description="This will disable your RentPay profile and queue it for permanent removal within 30 days. This action cannot be undone."
+        description="This will disable your RentPilot profile and queue it for permanent removal within 30 days. This action cannot be undone."
         confirmLabel={loading ? 'Processing…' : 'Request Deletion'}
         cancelLabel="Keep Account"
         onConfirm={handleConfirm}

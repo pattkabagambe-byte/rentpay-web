@@ -3,17 +3,17 @@ import { LegalPageShell, legalMetadata } from '@/components/legal-page'
 export const metadata = legalMetadata(
   'Terms of Service',
   '/terms',
-  'Terms governing use of the RentPay platform in Uganda.'
+  'Terms governing use of the RentPilot platform in Uganda.'
 )
 
 export default function TermsPage() {
   return (
     <LegalPageShell
       title="Terms of Service"
-      description="Last updated: May 2026. By using RentPay you agree to these terms."
+      description="Last updated: May 2026. By using RentPilot you agree to these terms."
     >
       <p>
-        These Terms of Service (&quot;Terms&quot;) govern your use of RentPay at rentpay.cc and related
+        These Terms of Service (&quot;Terms&quot;) govern your use of RentPilot at rentpay.cc and related
         services operated by Potentia-Motus Ventures. If you do not agree, do not use the platform.
       </p>
 
@@ -33,7 +33,7 @@ export default function TermsPage() {
       <h2>Payments</h2>
       <p>
         Rent payments are processed through third-party payment providers (including Yo! Payments Uganda).
-        RentPay facilitates invoicing and payment tracking but is not a bank. Payment disputes between
+        RentPilot facilitates invoicing and payment tracking but is not a bank. Payment disputes between
         landlords and tenants should be resolved between the parties; we may assist with transaction records
         where available.
       </p>
@@ -47,14 +47,14 @@ export default function TermsPage() {
 
       <h2>Content and documents</h2>
       <p>
-        You retain ownership of documents and data you upload. You grant RentPay a limited license to store,
+        You retain ownership of documents and data you upload. You grant RentPilot a limited license to store,
         display, and process that content solely to provide the service to you and connected parties (e.g.
         your landlord or tenant).
       </p>
 
       <h2>Limitation of liability</h2>
       <p>
-        RentPay is provided &quot;as is&quot; to the extent permitted by law. We are not liable for indirect
+        RentPilot is provided &quot;as is&quot; to the extent permitted by law. We are not liable for indirect
         damages, loss of rent, or disputes arising from tenancy relationships. Our total liability for any
         claim related to the service is limited to fees you paid us in the twelve months before the claim
         (or UGX 0 during free early access).

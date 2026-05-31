@@ -3,19 +3,19 @@ import { LegalPageShell, legalMetadata } from '@/components/legal-page'
 export const metadata = legalMetadata(
   'Privacy Policy',
   '/privacy',
-  'How RentPay collects, uses, and protects your personal information.'
+  'How RentPilot collects, uses, and protects your personal information.'
 )
 
 export default function PrivacyPage() {
   return (
     <LegalPageShell
       title="Privacy Policy"
-      description="Last updated: May 2026. Operated by Potentia-Motus Ventures (RentPay Uganda)."
+      description="Last updated: May 2026. Operated by Potentia-Motus Ventures (RentPilot)."
     >
       <p>
-        RentPay (&quot;we&quot;, &quot;us&quot;) provides rent management and payment services for landlords
+        RentPilot (&quot;we&quot;, &quot;us&quot;) provides rent management and payment services for landlords
         and tenants in Uganda. This policy explains what data we collect and how we use it when you use
-        rentpay.cc and our related applications.
+        rentpay.cc (RentPilot) and our related applications.
       </p>
 
       <h2>Information we collect</h2>
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
       <h2>Your rights</h2>
       <p>
         You may request access, correction, or deletion of your account data via Settings or by emailing
-        support@rentpay.ug. We will respond within a reasonable time as required by applicable law.
+        support@rentpay.cc. We will respond within a reasonable time as required by applicable law.
       </p>
 
       <h2>Changes</h2>

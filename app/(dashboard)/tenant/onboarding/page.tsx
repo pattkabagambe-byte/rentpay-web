@@ -28,7 +28,7 @@ export default async function TenantOnboardingPage() {
     <div className="space-y-10">
       <PageHeader
         title="Tenant verification"
-        description="Verify your identity and set payment preferences to start using RentPay."
+        description="Verify your identity and set payment preferences to start using RentPilot."
       />
 
       <TenantOnboardingForm profile={profile as UserProfile} />

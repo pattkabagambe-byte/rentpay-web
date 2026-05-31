@@ -79,17 +79,17 @@ export default async function ReceiptPage({ params }: { params: { paymentId: str
 
           {/* Branding + meta */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6 pb-8 border-b border-muted">
-            {/* RentPay logo */}
+            {/* RentPilot logo */}
             <div className="space-y-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
                   <span className="text-white font-black text-xl leading-none">R</span>
                 </div>
-                <span className="font-black text-2xl tracking-tight">RentPay</span>
+                <span className="font-black text-2xl tracking-tight">RentPilot</span>
               </div>
               <div className="space-y-0.5">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Receipt Number</p>
-                <p className="font-mono font-bold text-sm">RP-{p.id.split('-')[0].toUpperCase()}</p>
+                <p className="font-mono font-bold text-sm">RPL-{p.id.split('-')[0].toUpperCase()}</p>
               </div>
             </div>
 
@@ -270,7 +270,7 @@ export default async function ReceiptPage({ params }: { params: { paymentId: str
           {/* Footer */}
           <div className="pt-6 border-t border-muted text-center space-y-1">
             <p className="text-[10px] font-bold text-muted-foreground">
-              This is an official digital receipt issued by RentPay Uganda.
+              This is an official digital receipt issued by RentPilot.
             </p>
             <p className="text-[10px] text-muted-foreground/60">
               Receipt ID: {p.id} &bull; Issued: {formatDateTime(p.paid_at)}

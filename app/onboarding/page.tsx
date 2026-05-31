@@ -40,7 +40,7 @@ function RoleStep({
         <div className="w-16 h-16 mx-auto bg-primary/10 rounded-3xl flex items-center justify-center">
           <User size={28} className="text-primary" aria-hidden="true" />
         </div>
-        <h2 className="text-2xl font-black tracking-tight">How will you use RentPay?</h2>
+        <h2 className="text-2xl font-black tracking-tight">How will you use RentPilot?</h2>
         <p className="text-sm text-muted-foreground font-medium">
           Choose one or both — you can switch at any time.
         </p>
@@ -402,7 +402,7 @@ export default function OnboardingPage() {
       toast('Profile setup failed.', 'error')
       setSubmitting(false)
     } else {
-      toast('Profile complete! Welcome to RentPay.', 'success')
+      toast('Profile complete! Welcome to RentPilot.', 'success')
       if (activeMode === 'tenant') {
         router.push('/tenant/onboarding')
       } else {
@@ -429,7 +429,7 @@ export default function OnboardingPage() {
           <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-md">
             <span className="text-white font-black text-lg leading-none">R</span>
           </div>
-          <span className="font-black text-2xl tracking-tight">RentPay</span>
+          <span className="font-black text-2xl tracking-tight">RentPilot</span>
         </div>
 
         {/* Card */}

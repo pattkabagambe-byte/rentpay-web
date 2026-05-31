@@ -1,6 +1,6 @@
-# RentPay
+# RentPilot
 
-Rent management and payments for Uganda — built for landlords and tenants in Kampala and beyond.
+Rent management and payments for East Africa — built for landlords and tenants in Kampala and beyond.
 
 **Stack:** Next.js 14 · Supabase (Auth, Postgres, Storage, Realtime) · Yo! Payments · Vercel
 
@@ -26,8 +26,8 @@ Rent management and payments for Uganda — built for landlords and tenants in K
 ### 2. Clone and install
 
 ```bash
-git clone <repo-url> rentpay_web
-cd rentpay_web
+git clone <repo-url> rentpilot_web
+cd rentpilot_web
 npm install
 cp .env.example .env.local
 ```
@@ -57,8 +57,8 @@ npm run seed:demo
 Creates:
 | Role | Email | Password |
 |------|-------|----------|
-| Landlord | `landlord@demo.rentpay.ug` | `DemoLandlord1!` |
-| Tenant | `tenant@demo.rentpay.ug` | `DemoTenant1!` |
+| Landlord | `landlord@demo.rentpay.cc` | `DemoLandlord1!` |
+| Tenant | `tenant@demo.rentpay.cc` | `DemoTenant1!` |
 
 Invite code: **`DEMO2026`**
 

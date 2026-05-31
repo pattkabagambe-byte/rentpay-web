@@ -10,7 +10,7 @@ interface LegalPageProps {
 export function legalMetadata(title: string, path: '/privacy' | '/terms', description: string): Metadata {
   const canonical = path === '/privacy' ? 'https://rentpay.cc/privacy' : 'https://rentpay.cc/terms'
   return {
-    title: `${title} | RentPay`,
+    title: `${title} | RentPilot`,
     description,
     alternates: { canonical },
   }
@@ -24,7 +24,7 @@ export function LegalPageShell({ title, description, children }: LegalPageProps)
           <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
             <span className="text-white font-black">R</span>
           </div>
-          <span className="font-black text-xl tracking-tight">RentPay</span>
+          <span className="font-black text-xl tracking-tight">RentPilot</span>
         </Link>
       </header>
       <main className="container max-w-3xl mx-auto px-4 py-12 md:py-16 space-y-8">
@@ -37,8 +37,8 @@ export function LegalPageShell({ title, description, children }: LegalPageProps)
         </article>
         <p className="text-xs text-muted-foreground pt-4 border-t">
           Questions? Contact{' '}
-          <a href="mailto:support@rentpay.ug" className="text-primary font-bold hover:underline">
-            support@rentpay.ug
+          <a href="mailto:support@rentpay.cc" className="text-primary font-bold hover:underline">
+            support@rentpay.cc
           </a>
         </p>
       </main>

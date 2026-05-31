@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Demo seed script for RentPay (run after migrations).
+ * Demo seed script for RentPilot (run after migrations).
  *
  * Usage:
  *   npm run seed:demo
@@ -23,8 +23,8 @@ const admin = createClient(url, serviceKey, {
 })
 
 const DEMO = {
-  landlord: { email: 'landlord@demo.rentpay.ug', password: 'DemoLandlord1!', name: 'Sarah Nakato' },
-  tenant: { email: 'tenant@demo.rentpay.ug', password: 'DemoTenant1!', name: 'James Okello' },
+  landlord: { email: 'landlord@demo.rentpay.cc', password: 'DemoLandlord1!', name: 'Sarah Nakato' },
+  tenant: { email: 'tenant@demo.rentpay.cc', password: 'DemoTenant1!', name: 'James Okello' },
   property: {
     name: 'Kabalagala Heights',
     address: 'Ggaba Road, Kampala, Uganda',
@@ -69,7 +69,7 @@ async function ensureUser(email: string, password: string, fullName: string, rol
 }
 
 async function main() {
-  console.log('Seeding RentPay demo data…')
+  console.log('Seeding RentPilot demo data…')
 
   const landlordId = await ensureUser(
     DEMO.landlord.email,

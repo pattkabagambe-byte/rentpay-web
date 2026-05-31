@@ -62,10 +62,10 @@ export function AppShell({ children, userProfile, notifications, activeMode, rol
             </div>
             <div>
               <span className="font-black text-xl tracking-tight text-foreground block leading-none">
-                RentPay
+                RentPilot
               </span>
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                Uganda
+                East Africa
               </span>
             </div>
           </Link>
@@ -169,7 +169,7 @@ export function AppShell({ children, userProfile, notifications, activeMode, rol
             <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center shrink-0">
               <span className="text-white font-black text-xs leading-none">R</span>
             </div>
-            <span className="font-black text-base tracking-tight">RentPay</span>
+            <span className="font-black text-base tracking-tight">RentPilot</span>
             <span
               className={cn(
                 'hidden xs:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border',

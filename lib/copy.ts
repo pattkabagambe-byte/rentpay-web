@@ -1,10 +1,12 @@
-/** Uganda-focused copy used across RentPay */
+/** Uganda/East Africa-focused copy used across RentPilot */
+
+import { brand } from '@/lib/branding'
 
 export const copy = {
   app: {
-    name: 'RentPay',
-    tagline: 'Easy rent payments for Uganda',
-    locale: 'Built for Uganda',
+    name: brand.name,
+    tagline: brand.tagline,
+    locale: brand.locale,
   },
   currency: {
     default: 'UGX',
@@ -27,9 +29,9 @@ export const copy = {
   },
   landlord: {
     overview: 'Portfolio Overview',
-    overviewDesc: 'Your rental properties across Uganda at a glance.',
+    overviewDesc: 'Your rental properties across East Africa at a glance.',
     noProperties: 'No properties yet',
-    noPropertiesDesc: 'Add your first building in Kampala, Entebbe, or anywhere in Uganda.',
+    noPropertiesDesc: 'Add your first building in Kampala, Entebbe, or anywhere in East Africa.',
   },
   tenant: {
     home: 'My Home',

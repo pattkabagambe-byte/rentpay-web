@@ -43,7 +43,7 @@ export async function initiateInvoicePayment(input: {
     return { error: 'This invoice has already been paid.' }
   }
 
-  const narrative = `RentPay rent — ${invoice.properties?.name ?? 'Property'}`
+  const narrative = `RentPilot rent — ${invoice.properties?.name ?? 'Property'}`
 
   const { data: payment, error: payInsertError } = await supabase
     .from('payments')

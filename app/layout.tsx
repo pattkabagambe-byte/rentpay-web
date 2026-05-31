@@ -1,34 +1,34 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { ToastProvider } from '@/components/ui/toast'
+import { brand } from '@/lib/branding'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://rentpay.ug'
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? brand.url
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'RentPay — Rent Management & Payments in Uganda',
-    template: '%s | RentPay',
+    default: brand.meta.titleDefault,
+    template: brand.meta.titleTemplate,
   },
-  description:
-    'Collect rent via Mobile Money, manage properties, invoices, maintenance, and documents. Built for landlords and tenants in Uganda.',
-  keywords: ['rent', 'Uganda', 'landlord', 'tenant', 'Yo Payments', 'Mobile Money', 'property management', 'Kampala'],
-  authors: [{ name: 'Potentia-Motus Ventures' }],
+  description: brand.meta.description,
+  keywords: [...brand.meta.keywords],
+  authors: [{ name: brand.company }],
   openGraph: {
     type: 'website',
     locale: 'en_UG',
     url: siteUrl,
-    siteName: 'RentPay',
-    title: 'RentPay — Rent Management & Payments in Uganda',
-    description: 'Modern rent collection and tenancy management for Uganda.',
+    siteName: brand.name,
+    title: brand.meta.ogTitle,
+    description: brand.meta.ogDescription,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RentPay — Rent Management in Uganda',
-    description: 'Collect rent via Mobile Money. Manage properties and tenancies.',
+    title: brand.meta.twitterTitle,
+    description: brand.meta.twitterDescription,
   },
   robots: { index: true, follow: true },
 }

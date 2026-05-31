@@ -114,7 +114,7 @@ export default function RegisterPage() {
           <p className="text-muted-foreground font-medium leading-relaxed">
             We sent a confirmation link to{' '}
             <strong className="text-foreground">{email}</strong>.
-            Click the link to activate your RentPay account.
+            Click the link to activate your RentPilot account.
           </p>
         </div>
         <Link
@@ -134,7 +134,7 @@ export default function RegisterPage() {
         <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-md">
           <span className="text-white font-black text-lg leading-none">R</span>
         </div>
-        <span className="font-black text-2xl tracking-tight">RentPay</span>
+        <span className="font-black text-2xl tracking-tight">RentPilot</span>
       </div>
 
       {/* Heading */}
@@ -272,7 +272,7 @@ export default function RegisterPage() {
             </div>
           </div>
           <span className="text-xs text-muted-foreground font-medium leading-relaxed">
-            I agree to RentPay&apos;s{' '}
+            I agree to RentPilot&apos;s{' '}
             <Link href={LEGAL_PATHS.terms} className="text-primary font-bold hover:underline" onClick={(e) => e.stopPropagation()}>
               Terms of Service
             </Link>{' '}

@@ -69,7 +69,7 @@ export function LoginForm() {
         <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-md">
           <span className="text-white font-black text-lg leading-none">R</span>
         </div>
-        <span className="font-black text-2xl tracking-tight">RentPay</span>
+        <span className="font-black text-2xl tracking-tight">RentPilot</span>
       </div>
 
       {/* Heading */}

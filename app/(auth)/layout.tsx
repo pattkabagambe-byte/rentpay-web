@@ -25,14 +25,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="font-black text-xl leading-none">R</span>
           </div>
-          <span className="font-black text-2xl tracking-tight">RentPay</span>
+          <span className="font-black text-2xl tracking-tight">RentPilot</span>
         </Link>
 
         {/* Headline + value props */}
         <div className="relative space-y-8 max-w-sm">
           <div className="space-y-4">
             <h1 className="text-4xl font-black tracking-tight leading-tight">
-              Rent management<br />built for Uganda
+              Rent management<br />built for East Africa
             </h1>
             <p className="text-white/75 font-medium leading-relaxed text-base">
               Everything landlords and tenants need — in one place.

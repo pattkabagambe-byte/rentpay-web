@@ -32,7 +32,7 @@ The Landlord agrees to let and the Tenant agrees to take the premises known as $
 The tenancy shall commence on ${new Date(startDate).toLocaleDateString()} and shall continue on a month-to-month basis until terminated by either party giving one month's written notice.
 
 3. RENT
-The rent for the Property shall be ${currency} ${rentAmount.toLocaleString()} per month, payable in advance on the due date of each month through the RentPay platform.
+The rent for the Property shall be ${currency} ${rentAmount.toLocaleString()} per month, payable in advance on the due date of each month through the RentPilot platform.
 
 4. TENANT'S OBLIGATIONS
 The Tenant agrees:

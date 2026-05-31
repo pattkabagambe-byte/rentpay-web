@@ -86,7 +86,7 @@ export default async function LandlordDashboard() {
           value={formatCurrency(paymentsReceived)}
           icon={TrendingUp}
           color="primary"
-          description="Total collected via RentPay"
+          description="Total collected via RentPilot"
         />
         <StatCard
           title="Maintenance Requests"
