@@ -8,19 +8,32 @@ export function isTenantRoute(pathname: string): boolean {
   return pathname === '/tenant' || pathname.startsWith('/tenant/')
 }
 
+/**
+ * Determines whether the authenticated user (with the given roles + activeMode)
+ * is allowed to access the given pathname.
+ *
+ * Returns { allowed: true } when access is permitted.
+ * Returns { allowed: false, redirectTo } when the user should be redirected.
+ */
 export function canAccessRoute(
   pathname: string,
   roles: string[],
   activeMode: AppRole
 ): { allowed: boolean; redirectTo?: string } {
+  // Landlord-only routes: redirect tenants who lack the landlord role
   if (isLandlordRoute(pathname) && !roles.includes('landlord')) {
-    return { allowed: false, redirectTo: '/tenant' }
+    // Fall back to tenant home if the user has the tenant role, otherwise onboarding
+    const fallback = roles.includes('tenant') ? '/tenant' : '/onboarding'
+    return { allowed: false, redirectTo: fallback }
   }
 
+  // Tenant-only routes: redirect landlords who lack the tenant role
   if (isTenantRoute(pathname) && !roles.includes('tenant')) {
-    return { allowed: false, redirectTo: '/landlord' }
+    const fallback = roles.includes('landlord') ? '/landlord' : '/onboarding'
+    return { allowed: false, redirectTo: fallback }
   }
 
+  // /dashboard is a redirect stub — send to the active mode home
   if (pathname === '/dashboard') {
     return { allowed: false, redirectTo: `/${activeMode}` }
   }

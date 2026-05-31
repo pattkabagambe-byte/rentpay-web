@@ -4,56 +4,203 @@
 
 @layer base {
   :root {
+    /* Surface */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 220 20% 10%;
+
+    /* Cards / Popovers */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 20% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 161 84% 39%; /* #10b981 */
+    --popover-foreground: 220 20% 10%;
+
+    /* Brand colors — emerald primary, amber secondary, cyan accent */
+    --primary: 161 84% 39%;          /* #10b981 emerald */
     --primary-foreground: 0 0% 100%;
-    --secondary: 38 92% 50%; /* #f59e0b */
+    --secondary: 38 92% 50%;         /* #f59e0b amber */
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 188 86% 43%; /* #06b6d4 */
+    --accent: 188 86% 43%;           /* #06b6d4 cyan */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+
+    /* Muted / Neutral */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* State */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Form */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 161 84% 39%;
+
+    /* Border radius */
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* Surface — deep navy/slate */
+    --background: 222 28% 8%;
+    --foreground: 210 20% 96%;
+
+    /* Cards — slightly lighter than background */
+    --card: 222 24% 11%;
+    --card-foreground: 210 20% 96%;
+    --popover: 222 24% 11%;
+    --popover-foreground: 210 20% 96%;
+
+    /* Brand colors — darker/muted shades that still read as the brand */
+    --primary: 161 72% 45%;          /* emerald, slightly lighter for dark bg */
+    --primary-foreground: 161 50% 8%;
+    --secondary: 38 85% 55%;         /* amber, slightly lighter */
+    --secondary-foreground: 38 50% 8%;
+    --accent: 188 78% 48%;           /* cyan, slightly lighter */
+    --accent-foreground: 188 50% 8%;
+
+    /* Muted */
+    --muted: 222 20% 16%;
+    --muted-foreground: 220 12% 55%;
+
+    /* State */
+    --destructive: 0 65% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Form */
+    --border: 222 20% 18%;
+    --input: 222 20% 18%;
+    --ring: 161 72% 45%;
   }
 }
 
 @layer base {
-  * {
+  /* Smooth theme transitions */
+  *,
+  *::before,
+  *::after {
     @apply border-border;
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /* Exclude elements where transitions cause flicker */
+  [data-no-transition],
+  [data-no-transition] * {
+    transition: none !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Custom scrollbar — thin, primary-colored                                  */
+/* -------------------------------------------------------------------------- */
+@layer utilities {
+  /* WebKit */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary) / 0.35);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary) / 0.6);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary) / 0.35) transparent;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Safe-area utilities for mobile (notch / home-indicator padding)           */
+/* -------------------------------------------------------------------------- */
+@layer utilities {
+  .safe-top    { padding-top:    env(safe-area-inset-top,    0px); }
+  .safe-right  { padding-right:  env(safe-area-inset-right,  0px); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .safe-left   { padding-left:   env(safe-area-inset-left,   0px); }
+
+  .safe-x {
+    padding-left:  env(safe-area-inset-left,  0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .safe-y {
+    padding-top:    env(safe-area-inset-top,    0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-inset {
+    padding-top:    env(safe-area-inset-top,    0px);
+    padding-right:  env(safe-area-inset-right,  0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left:   env(safe-area-inset-left,   0px);
+  }
+
+  /* Minimum-height helpers that account for safe areas */
+  .min-h-screen-safe {
+    min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .h-screen-safe {
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Shimmer animation used by skeleton loaders                                */
+/* -------------------------------------------------------------------------- */
+@layer utilities {
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted))         0%,
+      hsl(var(--muted) / 0.5)  50%,
+      hsl(var(--muted))        100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Focus-visible polish                                                       */
+/* -------------------------------------------------------------------------- */
+@layer base {
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }

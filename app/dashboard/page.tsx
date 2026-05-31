@@ -1,6 +1,8 @@
 import { createClient } from '@/supabase/server'
 import { redirect } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 /** Auth entry — sends users to landlord or tenant home based on profile. */
 export default async function DashboardPage() {
   const supabase = createClient()

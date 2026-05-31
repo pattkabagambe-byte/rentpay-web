@@ -9,34 +9,45 @@ export const formatCurrency = (amount: number, currency: string = 'UGX') => {
   }).format(amount)
 }
 
-export const formatDate = (date: string | Date) => {
+export const formatDate = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat(DATE_LOCALE, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(date))
+  }).format(d)
 }
 
-export const formatDateTime = (date: string | Date) => {
+export const formatDateTime = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat(DATE_LOCALE, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(date))
+  }).format(d)
 }
 
-export const formatMonthYear = (date: string | Date) => {
+export const formatMonthYear = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat(DATE_LOCALE, {
     month: 'long',
     year: 'numeric',
-  }).format(new Date(date))
+  }).format(d)
 }
 
-export const formatRelativeDate = (date: string | Date) => {
+export const formatRelativeDate = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
   const now = new Date()
   const target = new Date(date)
+  if (isNaN(target.getTime())) return '—'
   const diffMs = now.getTime() - target.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
@@ -64,6 +75,26 @@ export const getNextDueDate = (dueDay: number): Date => {
     due.setMonth(due.getMonth() + 1)
   }
   return due
+}
+
+/**
+ * Format a raw integer as a Uganda Shilling amount with comma thousands separator.
+ * Suitable for displaying values inside input fields (no currency symbol).
+ * e.g. 500000 → "500,000"
+ */
+export const formatAmount = (amount: number | string): string => {
+  const n = typeof amount === 'string' ? parseFloat(amount.replace(/,/g, '')) : amount
+  if (isNaN(n)) return ''
+  return new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 }).format(n)
+}
+
+/**
+ * Parse a formatted amount string back to a number.
+ * e.g. "500,000" → 500000
+ */
+export const parseAmount = (value: string): number => {
+  const n = parseFloat(value.replace(/,/g, ''))
+  return isNaN(n) ? 0 : n
 }
 
 /** Format Uganda phone numbers (+256...) */

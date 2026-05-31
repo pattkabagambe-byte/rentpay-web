@@ -41,14 +41,19 @@ export default async function ChatRoomPage({ params }: { params: { tenancyId: st
   const otherParty = isLandlord ? tenancy.tenant : tenancy.landlord
 
   return (
-    <div className="space-y-6 h-full">
-      <div className="hidden md:block">
+    <div className="flex flex-col gap-4 h-full -mt-2">
+      {/* Desktop back link */}
+      <div className="hidden md:flex items-center gap-2">
         <Link
-            href="/messages"
-            className="flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors"
+          href="/messages"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary transition-colors group"
         >
-          <ChevronLeft size={16} />
-          Back to all messages
+          <ChevronLeft
+            size={16}
+            className="group-hover:-translate-x-0.5 transition-transform"
+            aria-hidden="true"
+          />
+          All conversations
         </Link>
       </div>
 

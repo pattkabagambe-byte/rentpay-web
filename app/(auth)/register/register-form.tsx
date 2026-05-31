@@ -10,7 +10,7 @@ import { validateForm } from '@/lib/validate'
 import { Button } from '@/components/ui/button'
 import { Input, FormErrorBanner } from '@/components/ui/form'
 import { useToast } from '@/components/ui/toast'
-import { Loader2, Building2, User } from 'lucide-react'
+import { Loader2, Building2, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserRole } from '@/types'
 
@@ -21,6 +21,9 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [role, setRole] = useState<UserRole>(initialRole)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
@@ -40,6 +43,17 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (password !== confirmPassword) {
+      setFieldErrors({ confirmPassword: 'Passwords do not match.' })
+      setError('Please make sure your passwords match.')
+      return
+    }
+
+    if (!termsAccepted) {
+      setError('Please accept the Terms of Service and Privacy Policy to continue.')
+      return
+    }
 
     const validation = validateForm(registerSchema, { full_name: fullName, email, password, role })
     if (!validation.success) {
@@ -91,36 +105,52 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="text-center space-y-4">
-        <h2 className="text-2xl font-black">Check your email</h2>
-        <p className="text-muted-foreground font-medium">
-          We sent a confirmation link to <strong className="text-foreground">{email}</strong>.
-          Click the link to activate your RentPay account.
-        </p>
-        <Link href="/login" className="inline-block text-primary font-bold hover:underline">Back to sign in</Link>
+      <div className="text-center space-y-6">
+        <div className="w-16 h-16 mx-auto bg-primary/10 rounded-3xl flex items-center justify-center">
+          <CheckCircle2 size={32} className="text-primary" aria-hidden="true" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black">Check your email</h2>
+          <p className="text-muted-foreground font-medium leading-relaxed">
+            We sent a confirmation link to{' '}
+            <strong className="text-foreground">{email}</strong>.
+            Click the link to activate your RentPay account.
+          </p>
+        </div>
+        <Link
+          href="/login"
+          className="inline-block text-sm text-primary font-bold hover:underline"
+        >
+          Back to sign in
+        </Link>
       </div>
     )
   }
 
   return (
     <>
-      <div className="lg:hidden flex items-center gap-2 mb-8">
-        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
-          <span className="text-white font-black">R</span>
+      {/* Mobile logo */}
+      <div className="lg:hidden flex items-center gap-2.5 mb-8">
+        <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-md">
+          <span className="text-white font-black text-lg leading-none">R</span>
         </div>
-        <span className="font-black text-xl">RentPay</span>
+        <span className="font-black text-2xl tracking-tight">RentPay</span>
       </div>
-      <div>
+
+      {/* Heading */}
+      <div className="space-y-1">
         <h2 className="text-3xl font-black tracking-tight">Create your account</h2>
         <p className="mt-2 text-sm text-muted-foreground font-medium">
           Already have an account?{' '}
           <Link href="/login" className="font-black text-primary hover:underline">Sign in</Link>
         </p>
       </div>
-      <form className="space-y-6" onSubmit={handleRegister} noValidate>
+
+      <form className="space-y-5" onSubmit={handleRegister} noValidate>
         {error && <FormErrorBanner message={error} />}
 
-        <div className="space-y-2">
+        {/* Role toggle */}
+        <div className="space-y-1.5">
           <label className="text-sm font-bold">I am a</label>
           <div className="grid grid-cols-2 gap-3">
             {(['landlord', 'tenant'] as const).map((r) => (
@@ -129,21 +159,30 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setRole(r)}
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-xl border-2 font-bold text-sm transition-all',
+                  'relative flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl border-2 font-bold text-sm transition-all',
                   role === r
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-muted hover:border-primary/30'
+                    ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                    : 'border-muted hover:border-primary/30 text-muted-foreground'
                 )}
+                aria-pressed={role === r}
               >
-                {r === 'landlord' ? <Building2 size={18} /> : <User size={18} />}
-                {r === 'landlord' ? 'Landlord' : 'Tenant'}
+                {r === 'landlord' ? <Building2 size={22} aria-hidden="true" /> : <User size={22} aria-hidden="true" />}
+                <span>{r === 'landlord' ? 'Landlord' : 'Tenant'}</span>
+                {role === r && (
+                  <span className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center" aria-hidden="true">
+                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                      <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                )}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Fields */}
         <div className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label htmlFor="full_name" className="text-sm font-bold">Full name</label>
             <Input
               id="full_name"
@@ -152,10 +191,12 @@ export default function RegisterPage() {
               placeholder="Jane Nakato"
               error={fieldErrors.full_name}
               autoComplete="name"
+              autoFocus
             />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-bold">Email</label>
+
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-sm font-bold">Email address</label>
             <Input
               id="email"
               type="email"
@@ -166,36 +207,94 @@ export default function RegisterPage() {
               autoComplete="email"
             />
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-1.5">
             <label htmlFor="password" className="text-sm font-bold">Password</label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors({}) }}
+                placeholder="At least 8 characters"
+                error={fieldErrors.password}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="confirm_password" className="text-sm font-bold">Confirm password</label>
             <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setFieldErrors({}) }}
-              placeholder="At least 8 characters"
-              error={fieldErrors.password}
+              id="confirm_password"
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors({}) }}
+              placeholder="••••••••"
+              error={fieldErrors.confirmPassword}
               autoComplete="new-password"
             />
           </div>
         </div>
 
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading && <Loader2 className="animate-spin" size={18} />}
-          Create account
-        </Button>
+        {/* Terms checkbox */}
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <div className="mt-0.5 shrink-0">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="sr-only"
+              aria-label="Accept terms"
+            />
+            <div
+              className={cn(
+                'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all',
+                termsAccepted
+                  ? 'bg-primary border-primary'
+                  : 'border-muted group-hover:border-primary/50'
+              )}
+              aria-hidden="true"
+            >
+              {termsAccepted && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4L4 7L9 1" stroke="white" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground font-medium leading-relaxed">
+            I agree to RentPay&apos;s{' '}
+            <Link href={LEGAL_PATHS.terms} className="text-primary font-bold hover:underline" onClick={(e) => e.stopPropagation()}>
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href={LEGAL_PATHS.privacy} className="text-primary font-bold hover:underline" onClick={(e) => e.stopPropagation()}>
+              Privacy Policy
+            </Link>
+            .
+          </span>
+        </label>
 
-        <p className="text-xs text-muted-foreground text-center font-medium">
-          By signing up you agree to our{' '}
-          <Link href={LEGAL_PATHS.terms} className="text-primary font-bold hover:underline">
-            Terms of Service
-          </Link>{' '}
-          and{' '}
-          <Link href={LEGAL_PATHS.privacy} className="text-primary font-bold hover:underline">
-            Privacy Policy
-          </Link>
-          .
-        </p>
+        {/* Submit */}
+        <Button type="submit" disabled={loading} className="w-full h-12 text-base">
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin mr-2" size={18} aria-hidden="true" />
+              Creating account…
+            </>
+          ) : (
+            'Create account'
+          )}
+        </Button>
       </form>
     </>
   )

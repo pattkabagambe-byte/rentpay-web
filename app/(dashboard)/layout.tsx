@@ -5,6 +5,8 @@ import { AppShell } from '@/components/app-shell'
 import { UserProfile } from '@/types'
 import { getNotifications } from '@/features/notifications/actions'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardLayout({
   children,
 }: {

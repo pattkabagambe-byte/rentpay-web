@@ -15,6 +15,17 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Rate-limit auth page loads to slow down credential-stuffing
+  if (
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/register'
+  ) {
+    const limit = rateLimit(`auth-page:${ip}`, 30, 60_000)
+    if (!limit.success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+  }
+
   let response = NextResponse.next({
     request: { headers: request.headers },
   })

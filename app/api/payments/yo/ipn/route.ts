@@ -36,6 +36,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing external reference' }, { status: 400 })
   }
 
+  // Validate that externalRef looks like a UUID to prevent injection via DB queries
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!UUID_RE.test(externalRef)) {
+    logPaymentEvent('ipn_invalid_ref', { ip, provider: 'yo', external_ref: externalRef }, 'warn')
+    return NextResponse.json({ error: 'Invalid external reference format' }, { status: 400 })
+  }
+
   let admin
   try {
     admin = createAdminClient()
@@ -58,8 +65,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unknown payment' }, { status: 404 })
   }
 
+  // Idempotency: do not reprocess terminal states
   if (pendingPayment.status === 'completed') {
+    logPaymentEvent('ipn_duplicate', { externalRef, provider: 'yo', status: 'completed' })
     return NextResponse.json({ status: 'ok', reason: 'already_completed' })
+  }
+
+  if (pendingPayment.status === 'failed' || pendingPayment.status === 'cancelled') {
+    logPaymentEvent('ipn_terminal_state', {
+      externalRef,
+      provider: 'yo',
+      status: pendingPayment.status,
+    }, 'warn')
+    return NextResponse.json({ status: 'ok', reason: `already_${pendingPayment.status}` })
   }
 
   try {

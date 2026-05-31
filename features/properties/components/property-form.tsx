@@ -138,64 +138,101 @@ export function PropertyForm({ initialData }: { initialData?: Property }) {
     <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl" noValidate>
       {error && <FormErrorBanner message={error} />}
 
-      <FormSection title="Basic information" description="Name and location of your rental property.">
+      <FormSection
+        title="Basic information"
+        description="Give your property a memorable name and provide its full Ugandan address."
+      >
         <div className="grid gap-6 md:grid-cols-2">
-          <FormField label="Property Name" htmlFor="name" required error={fieldErrors.name}>
+          <FormField
+            label="Property name"
+            htmlFor="name"
+            required
+            error={fieldErrors.name}
+            hint="A clear name helps tenants and landlords identify it easily"
+          >
             <Input
               id="name"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="e.g. Kabalagala Heights"
+              placeholder="e.g. Kabalagala Heights, Ntinda Flats"
               error={fieldErrors.name}
+              autoComplete="off"
             />
           </FormField>
-          <FormField label="Address" htmlFor="address_text" required error={fieldErrors.address_text}>
+          <FormField
+            label="Address"
+            htmlFor="address_text"
+            required
+            error={fieldErrors.address_text}
+            hint="Include street/road, area/zone, and city — e.g. Plot 23 Ggaba Road, Kansanga, Kampala"
+          >
             <Input
               id="address_text"
               name="address_text"
               value={formData.address_text}
               onChange={handleInputChange}
-              placeholder="e.g. Ggaba Road, Kampala"
+              placeholder="e.g. Plot 23 Ggaba Road, Kansanga, Kampala"
               error={fieldErrors.address_text}
+              autoComplete="street-address"
             />
           </FormField>
         </div>
       </FormSection>
 
-      <FormSection title="Utility accounts & meters" description="NWSC, UEDCL/Yaka, and rubbish collection references.">
+      <FormSection
+        title="Utility accounts & meters"
+        description="Optional — add NWSC, UEDCL/Yaka, and rubbish collection references so tenants know who to contact for utility issues."
+      >
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <FormField label="NWSC Account" htmlFor="nwsc_account_number" hint="National Water account number">
+          <FormField
+            label="NWSC account"
+            htmlFor="nwsc_account_number"
+            hint="National Water & Sewerage Corp account number (found on your water bill)"
+          >
             <Input
               id="nwsc_account_number"
               name="nwsc_account_number"
               value={formData.nwsc_account_number}
               onChange={handleInputChange}
-              placeholder="NWSC Number"
+              placeholder="e.g. 0012345678"
+              inputMode="numeric"
             />
           </FormField>
-          <FormField label="UEDCL / Yaka Meter" htmlFor="uedcl_meter_number">
+          <FormField
+            label="UEDCL / Yaka meter"
+            htmlFor="uedcl_meter_number"
+            hint="Uganda Electricity Distribution Company meter or Yaka token number"
+          >
             <Input
               id="uedcl_meter_number"
               name="uedcl_meter_number"
               value={formData.uedcl_meter_number}
               onChange={handleInputChange}
-              placeholder="Meter Number"
+              placeholder="e.g. 04100012345"
+              inputMode="numeric"
             />
           </FormField>
-          <FormField label="Rubbish Collection" htmlFor="rubbish_collection_account">
+          <FormField
+            label="Rubbish collection"
+            htmlFor="rubbish_collection_account"
+            hint="Kampala Capital City Authority or private collector account reference"
+          >
             <Input
               id="rubbish_collection_account"
               name="rubbish_collection_account"
               value={formData.rubbish_collection_account}
               onChange={handleInputChange}
-              placeholder="Account Number"
+              placeholder="Account number or area code"
             />
           </FormField>
         </div>
       </FormSection>
 
-      <FormSection title="Property photos" description="Up to 5 photos to showcase your property.">
+      <FormSection
+        title="Property photos"
+        description="Add up to 5 photos to help tenants picture the property. JPEG, PNG or WebP, max 5MB each."
+      >
         <UploadDropzone
           photos={formData.photo_urls}
           maxPhotos={5}
@@ -206,7 +243,10 @@ export function PropertyForm({ initialData }: { initialData?: Property }) {
         />
       </FormSection>
 
-      <FormSection title="Amenities">
+      <FormSection
+        title="Amenities"
+        description="Select all features and services available at this property."
+      >
         <div className="flex flex-wrap gap-3" role="group" aria-label="Property amenities">
           {AMENITIES_OPTIONS.map(amenity => (
             <button
@@ -215,7 +255,7 @@ export function PropertyForm({ initialData }: { initialData?: Property }) {
               onClick={() => toggleAmenity(amenity)}
               aria-pressed={formData.amenities.includes(amenity)}
               className={cn(
-                'px-5 py-2.5 rounded-full text-sm font-bold border-2 transition-all',
+                'px-5 py-2.5 rounded-full text-sm font-bold border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 formData.amenities.includes(amenity)
                   ? 'bg-primary border-primary text-white'
                   : 'bg-background border-muted text-muted-foreground hover:border-primary/50'
@@ -225,6 +265,11 @@ export function PropertyForm({ initialData }: { initialData?: Property }) {
             </button>
           ))}
         </div>
+        {formData.amenities.length > 0 && (
+          <p className="text-xs text-muted-foreground font-medium mt-2">
+            {formData.amenities.length} amenit{formData.amenities.length === 1 ? 'y' : 'ies'} selected
+          </p>
+        )}
       </FormSection>
 
       <FormActions>
